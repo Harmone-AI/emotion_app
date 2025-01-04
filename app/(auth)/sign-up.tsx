@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Text, TextInput, Button, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -17,7 +17,6 @@ export default function SignUpScreen() {
   const onSignUpPress = async () => {
     if (!isLoaded) return;
 
-    // Start sign-up process using email and password provided
     try {
       await signUp.create({
         username,
@@ -25,15 +24,9 @@ export default function SignUpScreen() {
         password,
       });
 
-      // Send user an email with verification code
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-
-      // Set 'pendingVerification' to true to display second form
-      // and capture OTP code
       setPendingVerification(true);
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
     }
   };
@@ -43,66 +36,82 @@ export default function SignUpScreen() {
     if (!isLoaded) return;
 
     try {
-      // Use the code the user provided to attempt verification
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code,
       });
 
-      // If verification was completed, set the session to active
-      // and redirect the user
       if (signUpAttempt.status === 'complete') {
         await setActive({ session: signUpAttempt.createdSessionId });
         router.replace('/');
       } else {
-        // If the status is not complete, check why. User may need to
-        // complete further steps.
         console.error(JSON.stringify(signUpAttempt, null, 2));
       }
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
     }
   };
 
   if (pendingVerification) {
     return (
-      <>
-        <Text>Verify your email</Text>
+      <View className="flex-1 bg-white p-6 justify-center">
+        <Text className="text-2xl font-semibold mb-6 text-center">Verify your email</Text>
         <TextInput
+          className="w-full bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200"
           value={code}
           placeholder='Enter your verification code'
           onChangeText={(code) => setCode(code)}
         />
-        <Button title='Verify' onPress={onVerifyPress} />
-      </>
+        <TouchableOpacity
+          className="bg-purple-600 rounded-lg p-4"
+          onPress={onVerifyPress}
+        >
+          <Text className="text-white text-center font-semibold">Verify Email</Text>
+        </TouchableOpacity>
+      </View>
     );
   }
 
   return (
-    <View>
-      <>
-        <Text>Sign up</Text>
-        <TextInput
-          autoCapitalize='none'
-          value={username}
-          placeholder='Enter username'
-          onChangeText={(username) => setUsername(username)}
-        />
-        <TextInput
-          autoCapitalize='none'
-          value={emailAddress}
-          placeholder='Enter email'
-          onChangeText={(email) => setEmailAddress(email)}
-        />
-        <TextInput
-          value={password}
-          placeholder='Enter password'
-          secureTextEntry={true}
-          onChangeText={(password) => setPassword(password)}
-        />
-        <Button title='Continue' onPress={onSignUpPress} />
-      </>
-    </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1"
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="flex-1 bg-white p-6 justify-center">
+          <Text className="text-2xl font-semibold mb-6 text-center">Sign up</Text>
+          <TextInput
+            className="w-full bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200"
+            autoCapitalize='none'
+            value={username}
+            placeholder='Enter username'
+            onChangeText={(username) => setUsername(username)}
+          />
+          <TextInput
+            className="w-full bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200"
+            autoCapitalize='none'
+            value={emailAddress}
+            placeholder='Enter email'
+            onChangeText={(email) => setEmailAddress(email)}
+          />
+          <TextInput
+            className="w-full bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200"
+            value={password}
+            placeholder='Enter password'
+            secureTextEntry={true}
+            onChangeText={(password) => setPassword(password)}
+          />
+          <TouchableOpacity
+            className="bg-purple-600 rounded-lg p-4"
+            onPress={onSignUpPress}
+          >
+            <Text className="text-white text-center font-semibold">Continue</Text>
+          </TouchableOpacity>
+          <Text className='text-center mt-4'>
+            Already have an account?{' '}
+            <Link href="/(auth)/sign-in" className="text-purple-600 font-bold">Sign in</Link>
+          </Text>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }

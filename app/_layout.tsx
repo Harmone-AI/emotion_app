@@ -2,11 +2,14 @@ import { tokenCache } from '@/cache';
 import {
   ClerkProvider,
   ClerkLoaded,
-  useAuth,
-  useClerk,
+  useAuth
 } from '@clerk/clerk-expo';
+import { Drawer } from 'expo-router/drawer';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
+import CustomDrawer from '../components/CustomDrawer';
+
+import '../style.css';
 
 function RootLayoutNav() {
   const { isSignedIn } = useAuth();
@@ -25,7 +28,30 @@ function RootLayoutNav() {
     }
   }, [isSignedIn, segments]);
 
-  return <Slot />;
+  if (segments[0] === '(auth)') {
+    return <Slot />;
+  }
+
+  return (
+    <Drawer
+      screenOptions={{
+        headerShown: true,
+        drawerStyle: {
+          width: '75%',
+        },
+      }}
+      drawerContent={CustomDrawer}
+    >
+      <Drawer.Screen
+        name="(tabs)"
+        options={{
+          headerShown: false,
+          drawerLabel: '主页',
+          title: '主页',
+        }}
+      />
+    </Drawer>
+  );
 }
 
 export default function RootLayout() {

@@ -1,108 +1,55 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { DrawerContentScrollView } from '@react-navigation/drawer';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useUser, useClerk } from '@clerk/clerk-expo';
-import { router } from 'expo-router';
-import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function CustomDrawer(props: any) {
+export default function CustomDrawer() {
   const { user } = useUser();
   const { signOut } = useClerk();
-  const navigation = useNavigation();
+  const router = useRouter();
 
   const handleSignOut = async () => {
     await signOut();
     router.replace('/(auth)/sign-in');
   };
 
-  const navigateToScreen = (screen: string) => {
-    navigation.navigate('tabs', { screen });
-    navigation.dispatch(DrawerActions.closeDrawer());
-  };
-
   return (
-    <DrawerContentScrollView {...props}>
-      <View style={styles.container}>
-        <View style={styles.userSection}>
-          {user?.imageUrl && (
-            <Image source={{ uri: user.imageUrl }} style={styles.avatar} />
-          )}
-          <Text style={styles.username}>{user?.username || 'User'}</Text>
-          <Text style={styles.email}>
-            {user?.emailAddresses[0].emailAddress}
-          </Text>
-        </View>
+    <SafeAreaView className="flex-1 p-4">
+      <View className="items-center p-4 border-b border-gray-200">
+        {user?.imageUrl && (
+          <Image
+            source={{ uri: user.imageUrl }}
+            className="w-20 h-20 rounded-full mb-2"
+          />
+        )}
+        <Text className="text-lg font-bold mb-1">{user?.username || 'User'}</Text>
+        <Text className="text-sm text-gray-600">
+          {user?.emailAddresses[0].emailAddress}
+        </Text>
+      </View>
 
-        <View style={styles.menuItems}>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateToScreen('index')}
-          >
-            <Text style={styles.menuText}>主页</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateToScreen('record')}
-          >
-            <Text style={styles.menuText}>记录</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>退出登录</Text>
+      <View className="mt-4">
+        <TouchableOpacity
+          className="py-3 px-4 rounded-lg"
+          onPress={() => router.push('/')}
+        >
+          <Text className="text-base">主页</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="py-3 px-4 rounded-lg"
+          onPress={() => router.push('/record')}
+        >
+          <Text className="text-base">记录</Text>
         </TouchableOpacity>
       </View>
-    </DrawerContentScrollView>
+
+      <TouchableOpacity
+        className="mt-auto bg-red-500 p-3 rounded-lg items-center"
+        onPress={handleSignOut}
+      >
+        <Text className="text-white font-semibold">退出登录</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  userSection: {
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 8,
-  },
-  username: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  email: {
-    fontSize: 14,
-    color: '#666',
-  },
-  menuItems: {
-    marginTop: 16,
-  },
-  menuItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  menuText: {
-    fontSize: 16,
-  },
-  signOutButton: {
-    marginTop: 'auto',
-    backgroundColor: '#ff4444',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  signOutText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
