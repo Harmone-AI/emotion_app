@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "emotion_app",
+    "name": "Emotion App",
     "slug": "emotion_app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -10,21 +10,16 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.harmone.emotion-app"
+      "bundleIdentifier": "com.harmone.emotion-app",
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      },
+      "package": "com.harmone.emotionapp"
     },
     "plugins": [
-      "expo-router",
       [
         "expo-splash-screen",
         {
@@ -32,16 +27,6 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
-        }
-      ],
-      [
-        "expo-speech-recognition",
-        {
-          "microphonePermission": "Allow $(PRODUCT_NAME) to use the microphone.",
-          "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to use speech recognition.",
-          "androidSpeechServicePackages": [
-            "com.google.android.googlequicksearchbox"
-          ]
         }
       ]
     ],

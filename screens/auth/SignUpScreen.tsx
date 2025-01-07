@@ -1,11 +1,24 @@
 import * as React from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
-import { Link, useRouter } from 'expo-router';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-export default function SignUpScreen() {
+type AuthStackParamList = {
+  SignIn: undefined;
+  SignUp: undefined;
+};
+
+type SignUpScreenNavigationProp = NativeStackNavigationProp<
+  AuthStackParamList,
+  'SignUp'
+>;
+
+type Props = {
+  navigation: SignUpScreenNavigationProp;
+};
+
+export default function SignUpScreen({ navigation }: Props) {
   const { isLoaded, signUp, setActive } = useSignUp();
-  const router = useRouter();
 
   const [emailAddress, setEmailAddress] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -42,7 +55,6 @@ export default function SignUpScreen() {
 
       if (signUpAttempt.status === 'complete') {
         await setActive({ session: signUpAttempt.createdSessionId });
-        router.replace('/');
       } else {
         console.error(JSON.stringify(signUpAttempt, null, 2));
       }
@@ -101,15 +113,17 @@ export default function SignUpScreen() {
             onChangeText={(password) => setPassword(password)}
           />
           <TouchableOpacity
-            className="bg-purple-600 rounded-lg p-4"
+            className="bg-purple-600 rounded-lg p-4 mb-6"
             onPress={onSignUpPress}
           >
-            <Text className="text-white text-center font-semibold">Continue</Text>
+            <Text className="text-white text-center font-semibold">Sign up</Text>
           </TouchableOpacity>
-          <Text className='text-center mt-4'>
-            Already have an account?{' '}
-            <Link href="/(auth)/sign-in" className="text-purple-600 font-bold">Sign in</Link>
-          </Text>
+          <View className="flex-row justify-center items-center space-x-2">
+            <Text className="text-gray-600">Already have an account?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+              <Text className="text-purple-600 font-semibold">Sign in</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
