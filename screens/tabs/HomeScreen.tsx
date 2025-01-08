@@ -94,8 +94,8 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView className='flex-1 bg-white'>
-      <ScrollView className='flex-1 px-6'>
+    <>
+      <ScrollView className='flex-1 px-6 bg-white py-6'>
         {/* 标题部分 */}
         <View>
           <Text className='text-2xl font-bold text-gray-900'>
@@ -224,6 +224,6 @@ export default function HomeScreen() {
           </TouchableWithoutFeedback>
         </BottomSheet>
       </Portal>
-    </SafeAreaView>
+    </>
   );
 }
