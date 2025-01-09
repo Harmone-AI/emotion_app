@@ -1,7 +1,6 @@
-import { ExampleQuery } from '@/components/ExampleQuery';
-import { Text, View, ScrollView, RefreshControl } from 'react-native';
-import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 
 export default function RecordScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -50,9 +49,6 @@ export default function RecordScreen() {
       <View className='flex-1 bg-white min-h-full' style={{ flex: 1 }}>
         <View className='items-center p-5'>
           <Text className='text-xl font-bold text-[#9370DB]'>记录页面</Text>
-        </View>
-        <View className='flex-1 px-5 pb-24'>
-          <ExampleQuery />
         </View>
       </View>
     </ScrollView>

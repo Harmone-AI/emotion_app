@@ -1,29 +1,25 @@
-import React from 'react';
-import {
-  NavigationContainer,
-  useNavigation,
-  DrawerActions,
-} from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useAuth, useUser } from '@clerk/clerk-expo';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
 } from '@react-navigation/drawer';
-import { useAuth, useUser } from '@clerk/clerk-expo';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import {
+  DrawerActions,
+  NavigationContainer,
+  useNavigation,
+} from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import SignInScreen from '../screens/auth/SignInScreen';
 import SignUpScreen from '../screens/auth/SignUpScreen';
+import AddGoalScreen from '../screens/tabs/AddGoalScreen';
 import HomeScreen from '../screens/tabs/HomeScreen';
 import RecordScreen from '../screens/tabs/RecordScreen';
-import {
-  RootStackParamList,
-  DrawerParamList,
-  TabParamList,
-  NavigationProp,
-} from './types';
+import { DrawerParamList, RootStackParamList, TabParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -60,8 +56,8 @@ function useCurrentTab() {
 }
 
 function CustomDrawerContent() {
-  // const { user } = useUser();
-  // const { signOut } = useAuth();
+  const { user } = useUser();
+  const { signOut } = useAuth();
   const navigation = useNavigation();
   const currentTab = useCurrentTab();
 
@@ -81,7 +77,7 @@ function CustomDrawerContent() {
     <View className='flex-1 bg-white'>
       <DrawerContentScrollView>
         {/* 用户信息区域 */}
-        {/* <View className='px-6 py-8'>
+        <View className='px-6 py-8'>
           <View className='items-center'>
             {user?.imageUrl ? (
               <Image
@@ -104,7 +100,7 @@ function CustomDrawerContent() {
               {user?.primaryEmailAddress?.emailAddress}
             </Text>
           </View>
-        </View> */}
+        </View>
 
         {/* 导航菜单 */}
         <View className='px-4 py-6'>
@@ -242,7 +238,6 @@ function TabNavigator() {
           tabBarLabel: '记录',
           headerTitle: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <MaterialCommunityIcons name='heart' size={24} color='#9370DB' />
               <Text
                 style={{
                   marginLeft: 8,
@@ -251,7 +246,7 @@ function TabNavigator() {
                   fontWeight: '600',
                 }}
               >
-                心情记录
+                成长故事
               </Text>
             </View>
           ),
@@ -279,27 +274,50 @@ function DrawerNavigator() {
 }
 
 export default function Navigation() {
-  // const { isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
 
-  // console.log(isSignedIn);
+  if (!isLoaded) {
+    return null;
+  }
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        {/* {!isSignedIn ? (
-          <Stack.Group screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        {!isSignedIn ? (
+          <>
             <Stack.Screen name='SignIn' component={SignInScreen} />
             <Stack.Screen name='SignUp' component={SignUpScreen} />
-          </Stack.Group>
+          </>
         ) : (
-          
-        )} */}
+          <>
+            <Stack.Group screenOptions={{ headerShown: false }}>
+              <Stack.Screen name='Root' component={DrawerNavigator} />
+            </Stack.Group>
 
-        <Stack.Screen
-          name='Root'
-          component={DrawerNavigator}
-          options={{ headerShown: false }}
-        />
+            <Stack.Group
+              screenOptions={{
+                presentation: 'modal',
+                headerShown: false,
+                headerShadowVisible: false,
+                headerStyle: { backgroundColor: 'white' },
+                contentStyle: { backgroundColor: 'white' },
+                fullScreenGestureEnabled: true,
+              }}
+            >
+              <Stack.Screen
+                name='AddGoal'
+                component={AddGoalScreen}
+                options={{
+                  title: "How's your day?",
+                }}
+              />
+            </Stack.Group>
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
