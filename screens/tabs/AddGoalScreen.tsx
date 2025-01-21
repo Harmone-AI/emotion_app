@@ -1,68 +1,105 @@
-import { generateGoals } from '@/services';
-import { Ionicons } from '@expo/vector-icons';
-import { useMutation } from '@tanstack/react-query';
+import { RootStackNavigationProp } from '@/navigation/types';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from 'expo-speech-recognition';
 import { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Animated,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
+  SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useWord2TaskList } from '../../hooks/useTaskQueries';
 
 export default function AddGoalScreen() {
+  const navigation = useNavigation<RootStackNavigationProp>();
   const [feeling, setFeeling] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [waveformBars, setWaveformBars] = useState<number[]>([]);
+  const [input, setInput] = useState('');
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // 使用 react-query 的 mutation
+  const { mutate: word2TaskList, isPending } = useWord2TaskList();
 
   // 处理语音识别事件
   useSpeechRecognitionEvent('start', () => {
     setIsListening(true);
-    // 清空上一次的输入，避免重复
-    setFeeling('');
+    // 开始波形动画
+    startWaveformAnimation();
   });
+
   useSpeechRecognitionEvent('end', () => {
     setIsListening(false);
+    // 停止波形动画
+    stopWaveformAnimation();
   });
+
   useSpeechRecognitionEvent('result', (event) => {
     if (event.results[0]?.transcript) {
-      // 直接设置最新的识别结果，而不是追加
       setFeeling(event.results[0].transcript);
     }
   });
+
   useSpeechRecognitionEvent('error', (event) => {
     console.log('error code:', event.error, 'error message:', event.message);
-    Alert.alert('Error', 'Could not start voice recognition');
+    Alert.alert('Error', '语音识别失败，请重试');
   });
 
-  // 麦克风按钮动画效果
+  // 波形动画
+  const startWaveformAnimation = () => {
+    // 生成随机波形数据
+    const generateWaveform = () => {
+      const bars = Array.from(
+        { length: 30 },
+        () => Math.random() * (isListening ? 40 : 10) + 10
+      );
+      setWaveformBars(bars);
+    };
+
+    // 每100ms更新一次波形
+    const interval = setInterval(generateWaveform, 100);
+    return () => clearInterval(interval);
+  };
+
+  const stopWaveformAnimation = () => {
+    setWaveformBars([]);
+  };
+
+  // 呼吸动画
   useEffect(() => {
+    const breatheAnimation = () => {
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        if (isListening) {
+          breatheAnimation();
+        }
+      });
+    };
+
     if (isListening) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.2,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
+      breatheAnimation();
     } else {
       pulseAnim.setValue(1);
     }
@@ -73,10 +110,7 @@ export default function AddGoalScreen() {
       const result =
         await ExpoSpeechRecognitionModule.requestPermissionsAsync();
       if (!result.granted) {
-        Alert.alert(
-          'Permission needed',
-          'Please grant microphone permissions to use voice input'
-        );
+        Alert.alert('需要权限', '请允许使用麦克风以启用语音输入');
         return;
       }
 
@@ -86,11 +120,11 @@ export default function AddGoalScreen() {
         maxAlternatives: 1,
         continuous: false,
         requiresOnDeviceRecognition: false,
-        addsPunctuation: false,
+        addsPunctuation: true,
       });
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Could not start voice recognition');
+      Alert.alert('错误', '无法启动语音识别，请重试');
     }
   };
 
@@ -104,107 +138,128 @@ export default function AddGoalScreen() {
 
   const handleSubmit = () => {
     if (!feeling.trim()) {
-      Alert.alert('Please share your feelings');
+      Alert.alert('提示', '请先说点什么...');
       return;
     }
-    console.log({ feeling });
-    // TODO: 处理提交逻辑
+
+    word2TaskList(
+      { input: feeling, userId: 1 },
+      {
+        onSuccess: (result) => {
+          Alert.alert('成功', result.start_message, [
+            {
+              text: '查看任务',
+              onPress: () => {
+                navigation.navigate('TaskList');
+              },
+            },
+            {
+              text: '继续添加',
+              style: 'cancel',
+              onPress: () => {
+                setFeeling('');
+              },
+            },
+          ]);
+        },
+        onError: (error) => {
+          Alert.alert('错误', '生成任务列表失败，请稍后重试');
+          console.error('Error generating task list:', error);
+        },
+      }
+    );
   };
 
   return (
-    <SafeAreaView className='flex-1 pb-8'>
+    <SafeAreaView className='flex-1 bg-white'>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className='flex-1 bg-white'
-        style={{ width: '100%' }}
+        className='flex-1'
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View className='flex-1 px-4 py-8' style={{ width: '100%' }}>
-            {/* 头部文案 */}
-            <View className='mb-6'>
-              <Text className='text-2xl font-semibold text-gray-900 mb-2'>
-                How are you feeling today?
-              </Text>
-              <Text className='text-base text-gray-500'>
-                Share your thoughts and feelings, and we'll help you set
-                meaningful goals.
-              </Text>
-            </View>
+          <View className='flex-1 px-6 pt-4 pb-8'>
+            {/* 头部关闭按钮 */}
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              className='self-end p-2'
+            >
+              <MaterialCommunityIcons name='close' size={24} color='#666' />
+            </TouchableOpacity>
 
             {/* 输入区域 */}
-            <View className='flex-1 mb-6'>
-              <View className='flex-row justify-between items-center mb-4'>
-                <Text className='text-lg font-medium text-gray-700'>
-                  Your feelings
-                </Text>
-                <Animated.View
-                  style={{
-                    transform: [{ scale: pulseAnim }],
-                    opacity: pulseAnim.interpolate({
-                      inputRange: [1, 1.2],
-                      outputRange: [1, 0.7],
-                    }),
-                  }}
-                >
-                  <Pressable
-                    onPress={isListening ? stopListening : startListening}
-                    className={`p-3 rounded-full ${
-                      isListening ? 'bg-red-100' : 'bg-gray-100'
-                    }`}
-                  >
-                    <Ionicons
-                      name={isListening ? 'mic' : 'mic-outline'}
-                      size={24}
-                      color={isListening ? '#ef4444' : '#374151'}
-                    />
-                  </Pressable>
-                </Animated.View>
-              </View>
-
+            <View className='flex-1'>
               <TextInput
-                className='flex-1 bg-gray-50 rounded-xl p-4 text-base leading-6 text-gray-700'
-                placeholder="I'm feeling..."
+                className='flex-1 text-base leading-6 text-gray-700'
+                placeholder='你感觉怎么样？&#10;你今天在忙什么？&#10;输入你心中的想法，开始你的个人冒险......'
+                placeholderTextColor='#666'
                 value={feeling}
                 onChangeText={setFeeling}
                 multiline
                 textAlignVertical='top'
-                style={{ minHeight: 100 }}
               />
+
+              {/* 语音波形动画 */}
+              {isListening && (
+                <View className='flex-row items-center justify-center h-20 my-4'>
+                  {waveformBars.map((height, index) => (
+                    <View
+                      key={index}
+                      className='mx-0.5 bg-purple-500'
+                      style={{
+                        height,
+                        width: 3,
+                        borderRadius: 1.5,
+                      }}
+                    />
+                  ))}
+                </View>
+              )}
             </View>
 
-            {/* 提交按钮 */}
-            <GenerateGoalsButton feeling={feeling} />
+            {/* 底部按钮区域 */}
+            <View className='flex-row justify-between items-center mt-4 mb-8'>
+              <TouchableOpacity
+                onPress={isListening ? stopListening : startListening}
+                className={`p-3 rounded-full ${
+                  isListening ? 'bg-purple-100' : ''
+                }`}
+              >
+                <MaterialCommunityIcons
+                  name={isListening ? 'microphone' : 'microphone-outline'}
+                  size={28}
+                  color={isListening ? '#9333ea' : '#374151'}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleSubmit}
+                disabled={isPending}
+                className='bg-white rounded-3xl py-3 px-14 border border-gray-100'
+                style={{
+                  minWidth: 140,
+                  opacity: isPending ? 0.7 : 1,
+                  shadowColor: '#000',
+                  shadowOffset: {
+                    width: 0,
+                    height: 1,
+                  },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 1,
+                  elevation: 1,
+                }}
+              >
+                {isPending ? (
+                  <ActivityIndicator color='#9333ea' />
+                ) : (
+                  <Text className='text-base text-center text-gray-700'>
+                    完成
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-}
-
-function GenerateGoalsButton({ feeling }: { feeling: string }) {
-  const generateGoalsMutate = useMutation({
-    mutationKey: ['generate-goals'],
-    mutationFn: generateGoals,
-    onSuccess: (response) => {
-      console.log(response);
-    },
-  });
-
-  return (
-    <TouchableOpacity
-      onPress={async () => {
-        console.log(123123123);
-        const result = await generateGoalsMutate.mutateAsync(feeling);
-        console.log('result', result);
-      }}
-      className={`py-3 rounded-xl ${
-        feeling.trim() ? 'bg-purple-600' : 'bg-gray-300'
-      }`}
-      disabled={!feeling.trim()}
-    >
-      <Text className='text-white text-center font-semibold text-lg'>
-        Generate Goals
-      </Text>
-    </TouchableOpacity>
   );
 }

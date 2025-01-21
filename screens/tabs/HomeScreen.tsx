@@ -10,6 +10,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useRef, useState } from 'react';
 import {
   Keyboard,
+  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -20,6 +21,9 @@ import {
 type RootStackParamList = {
   Home: undefined;
   AddGoal: undefined;
+  Record: undefined;
+  TaskList: undefined;
+  StoryList: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -56,7 +60,6 @@ export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [goals, setGoals] = useState<Goal[]>(defaultGoals);
   const [newGoal, setNewGoal] = useState('');
-  const [energy, setEnergy] = useState(0);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const renderBackdrop = useCallback(
@@ -93,11 +96,6 @@ export default function HomeScreen() {
     }
   };
 
-  const handleOpenPress = () => {
-    console.log('Opening bottom sheet');
-    bottomSheetRef.current?.expand();
-  };
-
   const handleClosePress = () => {
     bottomSheetRef.current?.close();
   };
@@ -106,93 +104,97 @@ export default function HomeScreen() {
     navigation.navigate('AddGoal');
   };
 
+  const handleSheetChanges = (index: number) => {
+    console.log('Bottom sheet index changed:', index);
+    if (index === -1) {
+      Keyboard.dismiss();
+    }
+  };
+
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View className='flex-1 bg-white'>
-        <ScrollView className='flex-1 px-6 bg-white py-6'>
-          {/* 标题部分 */}
-          <View>
-            <TouchableOpacity
-              onPress={handleNavigateToAddGoal}
-              className='flex-row items-center justify-between mb-6 p-4 bg-[#E6E6FA] rounded-lg'
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={{ flex: 1 }}>
+        {/* 顶部导航 */}
+        <View className='flex-row justify-between items-center px-12 py-4'>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('TaskList')}
+            className='w-8 h-8'
+          >
+            <MaterialCommunityIcons name='menu' size={24} color='#666' />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('StoryList')}
+            className='w-8 h-8'
+          >
+            <View className='absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full' />
+            <MaterialCommunityIcons name='bell' size={24} color='#666' />
+          </TouchableOpacity>
+        </View>
+
+        {/* 主要内容区域 */}
+        <View className='flex-1 px-6 justify-center'>
+          {/* 任务列表区域 */}
+          <View
+            className='bg-gray-50 rounded-3xl overflow-hidden'
+            style={{ height: 280 }}
+          >
+            <ScrollView
+              className='flex-1'
+              contentContainerStyle={{ padding: 20 }}
+              showsVerticalScrollIndicator={false}
             >
-              <Text className='text-lg'>How's your day?</Text>
-              <MaterialCommunityIcons
-                name='chevron-right'
-                size={24}
-                color='#000'
-              />
-            </TouchableOpacity>
-            <Text className='text-2xl font-bold text-gray-900'>
-              How's your day?
-            </Text>
-            <Text className='mt-2 text-base text-gray-600'>
-              Energy - lvl:{energy}
-            </Text>
-            <View className='mt-4 flex-row items-center justify-between bg-purple-100 rounded-xl p-4'>
-              <View>
-                <Text className='text-sm text-purple-600 font-medium'>
-                  Energy
-                </Text>
-                <Text className='text-2xl font-bold text-purple-700 mt-1'>
-                  {energy}/15
-                </Text>
-              </View>
-              <View className='h-12 w-12 bg-purple-200 rounded-full items-center justify-center'>
-                <Text className='text-xl text-purple-600'>🌟</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* 目标列表 */}
-          <View className='flex-1'>
-            <Text className='text-lg font-semibold text-gray-900 mb-4 mt-8'>
-              Goals
-            </Text>
-            {goals.map((goal) => (
-              <TouchableOpacity
-                key={goal.id}
-                onPress={() => toggleGoal(goal.id)}
-                className='flex-row items-center bg-gray-50 rounded-xl p-4 mb-3'
-              >
-                <View
-                  className={`h-6 w-6 rounded-full border-2 mr-3 items-center justify-center ${
-                    goal.completed
-                      ? 'bg-purple-600 border-purple-600'
-                      : 'border-gray-300'
-                  }`}
+              {goals.map((goal) => (
+                <TouchableOpacity
+                  key={goal.id}
+                  onPress={() => toggleGoal(goal.id)}
+                  className='flex-row items-center bg-white rounded-xl p-4 mb-3 shadow-sm'
+                  style={{
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 2,
+                    elevation: 1,
+                  }}
                 >
-                  {goal.completed && (
-                    <Text className='text-white text-xs'>✓</Text>
-                  )}
-                </View>
-                <Text
-                  className={`flex-1 text-base ${
-                    goal.completed
-                      ? 'text-gray-400 line-through'
-                      : 'text-gray-700'
-                  }`}
-                >
-                  {goal.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <View
+                    className={`h-6 w-6 rounded-full border-2 mr-3 items-center justify-center ${
+                      goal.completed
+                        ? 'bg-purple-600 border-purple-600'
+                        : 'border-gray-300'
+                    }`}
+                  >
+                    {goal.completed && (
+                      <Text className='text-white text-xs'>✓</Text>
+                    )}
+                  </View>
+                  <Text
+                    className={`flex-1 text-base ${
+                      goal.completed
+                        ? 'text-gray-400 line-through'
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    {goal.title}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
-        </ScrollView>
+        </View>
 
-        {/* 浮动添加按钮 */}
+        {/* 底部浮动按钮 */}
         <TouchableOpacity
-          className='absolute bottom-8 right-6 w-14 h-14 bg-purple-600 rounded-full items-center justify-center shadow-lg'
+          className='absolute bottom-6 left-1/2 -ml-8 w-16 h-16 bg-white rounded-full items-center justify-center shadow-lg'
           style={{
-            shadowColor: '#9333ea',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 4,
-            elevation: 6,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 4,
           }}
-          onPress={handleOpenPress}
+          onPress={handleNavigateToAddGoal}
         >
-          <MaterialCommunityIcons name='plus' size={30} color='white' />
+          <MaterialCommunityIcons name='plus' size={32} color='#666' />
         </TouchableOpacity>
 
         {/* Bottom Sheet */}
@@ -200,17 +202,12 @@ export default function HomeScreen() {
           <BottomSheet
             ref={bottomSheetRef}
             snapPoints={['40%']}
-            onChange={(index) => {
-              console.log('Bottom sheet index changed:', index);
-              if (index === -1) {
-                Keyboard.dismiss();
-              }
-            }}
+            onChange={handleSheetChanges}
             index={-1}
             enablePanDownToClose
             backdropComponent={renderBackdrop}
             handleIndicatorStyle={{
-              backgroundColor: '#9333ea',
+              backgroundColor: '#DDD',
               width: 40,
             }}
             backgroundStyle={{
@@ -220,12 +217,7 @@ export default function HomeScreen() {
             }}
             android_keyboardInputMode='adjustResize'
           >
-            <TouchableWithoutFeedback
-              onPress={() => {
-                bottomSheetRef.current?.snapToIndex(0);
-                Keyboard.dismiss();
-              }}
-            >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <BottomSheetView className='flex-1 px-6 pt-2'>
                 <Text className='text-xl font-semibold text-gray-900 mb-6'>
                   添加新目标
@@ -250,6 +242,6 @@ export default function HomeScreen() {
           </BottomSheet>
         </Portal>
       </View>
-    </TouchableWithoutFeedback>
+    </SafeAreaView>
   );
 }

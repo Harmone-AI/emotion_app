@@ -1,81 +1,40 @@
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
-  createDrawerNavigator,
+  DrawerContentComponentProps,
   DrawerContentScrollView,
+  createDrawerNavigator,
 } from '@react-navigation/drawer';
-import {
-  DrawerActions,
-  NavigationContainer,
-  useNavigation,
-} from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import * as React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import SignInScreen from '../screens/auth/SignInScreen';
 import SignUpScreen from '../screens/auth/SignUpScreen';
+import StoryDetailScreen from '../screens/StoryDetailScreen';
+import StoryListScreen from '../screens/StoryListScreen';
 import AddGoalScreen from '../screens/tabs/AddGoalScreen';
 import HomeScreen from '../screens/tabs/HomeScreen';
-import RecordScreen from '../screens/tabs/RecordScreen';
-import { DrawerParamList, RootStackParamList, TabParamList } from './types';
+import TaskListScreen from '../screens/TaskListScreen';
+import TaskCompletionScreen from '../screens/TaskCompletionScreen';
+import { DrawerParamList, RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator<TabParamList>();
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
-// 自定义 hook 获取当前标签页
-function useCurrentTab() {
-  const navigation = useNavigation();
-
-  const getCurrentTab = () => {
-    try {
-      const state = navigation.getState();
-      // 找到 Root 路由
-      const rootRoute = state?.routes?.find((route) => route.name === 'Root');
-      if (!rootRoute?.state) return 'Home';
-
-      // 找到 Main 路由
-      const drawerState = rootRoute.state as any;
-      const mainRoute = drawerState.routes.find(
-        (route: any) => route.name === 'Main'
-      );
-      if (!mainRoute?.state) return 'Home';
-
-      // 获取当前标签页
-      const tabState = mainRoute.state;
-      return tabState.routes[tabState.index]?.name || 'Home';
-    } catch (error) {
-      console.log('Error getting current tab:', error);
-      return 'Home';
-    }
-  };
-
-  return getCurrentTab();
-}
-
-function CustomDrawerContent() {
+function CustomDrawerContent(props: DrawerContentComponentProps) {
+  const { navigation } = props;
   const { user } = useUser();
   const { signOut } = useAuth();
-  const navigation = useNavigation();
-  const currentTab = useCurrentTab();
 
-  console.log(currentTab);
-
-  const navigateToScreen = (screenName: keyof TabParamList) => {
-    // @ts-ignore: 暂时忽略类型检查
-    navigation.navigate('Root', {
-      screen: 'Main',
-      params: {
-        screen: screenName,
-      },
-    });
+  const navigateToScreen = (screenName: keyof DrawerParamList) => {
+    navigation.navigate(screenName);
   };
 
   return (
     <View className='flex-1 bg-white'>
-      <DrawerContentScrollView>
+      <DrawerContentScrollView {...props}>
         {/* 用户信息区域 */}
         <View className='px-6 py-8'>
           <View className='items-center'>
@@ -102,60 +61,23 @@ function CustomDrawerContent() {
           </View>
         </View>
 
-        {/* 导航菜单 */}
-        <View className='px-4 py-6'>
+        {/* Menu Items */}
+        <View className='px-2 mt-4'>
           <TouchableOpacity
-            className='flex-row items-center px-4 py-3 rounded-lg mb-2'
-            style={{
-              backgroundColor:
-                currentTab === 'Home' ? '#f3e8ff' : 'transparent',
-            }}
+            className='flex-row items-center px-2 py-3 rounded-lg'
             onPress={() => navigateToScreen('Home')}
           >
-            <MaterialCommunityIcons
-              name='home'
-              size={24}
-              color={currentTab === 'Home' ? '#9333ea' : '#4b5563'}
-            />
-            <Text
-              className={`ml-3 ${
-                currentTab === 'Home' ? 'text-purple-600' : 'text-gray-700'
-              }`}
-            >
-              首页
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className='flex-row items-center px-4 py-3 rounded-lg'
-            style={{
-              backgroundColor:
-                currentTab === 'Record' ? '#f3e8ff' : 'transparent',
-            }}
-            onPress={() => navigateToScreen('Record')}
-          >
-            <MaterialCommunityIcons
-              name='text-box'
-              size={24}
-              color={currentTab === 'Record' ? '#9333ea' : '#4b5563'}
-            />
-            <Text
-              className={`ml-3 ${
-                currentTab === 'Record' ? 'text-purple-600' : 'text-gray-700'
-              }`}
-            >
-              记录
-            </Text>
+            <MaterialCommunityIcons name='home' size={24} color='#666' />
+            <Text className='ml-3 text-gray-700 text-base'>首页</Text>
           </TouchableOpacity>
         </View>
-
-        {/* 登出按钮 */}
       </DrawerContentScrollView>
 
+      {/* 登出按钮 */}
       <View className='px-4'>
         <TouchableOpacity
           className='mt-2 mb-6 flex-row items-center px-4 py-3 w-full rounded-full bg-red-500 justify-center'
-          // onPress={() => signOut()}
+          onPress={() => signOut()}
         >
           <MaterialCommunityIcons name='logout' size={18} color='#fff' />
           <Text className='ml-3 text-white font-medium'>退出登录</Text>
@@ -165,120 +87,33 @@ function CustomDrawerContent() {
   );
 }
 
-function TabNavigator() {
-  const navigation = useNavigation();
-
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Record') {
-            iconName = focused ? 'text-box' : 'text-box-outline';
-          }
-
-          return (
-            <MaterialCommunityIcons
-              name={iconName as any}
-              size={size}
-              color={color}
-            />
-          );
-        },
-        tabBarActiveTintColor: '#9370DB',
-        tabBarInactiveTintColor: 'gray',
-        headerShown: true,
-        headerTitleStyle: {
-          color: '#9370DB',
-          fontSize: 18,
-        },
-        headerTitleAlign: 'center',
-        headerLeft: () => (
-          <MaterialCommunityIcons
-            name='menu'
-            size={24}
-            color='#9370DB'
-            style={{ marginLeft: 10 }}
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-          />
-        ),
-      })}
-    >
-      <Tab.Screen
-        name='Home'
-        component={HomeScreen}
-        options={{
-          title: '首页',
-          tabBarLabel: '首页',
-          headerTitle: () => (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <MaterialCommunityIcons name='heart' size={24} color='#9370DB' />
-              <Text
-                style={{
-                  marginLeft: 8,
-                  fontSize: 18,
-                  color: '#9370DB',
-                  fontWeight: '600',
-                }}
-              >
-                心情记录
-              </Text>
-            </View>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name='Record'
-        component={RecordScreen}
-        options={{
-          title: '记录',
-          tabBarLabel: '记录',
-          headerTitle: () => (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text
-                style={{
-                  marginLeft: 8,
-                  fontSize: 18,
-                  color: '#9370DB',
-                  fontWeight: '600',
-                }}
-              >
-                成长故事
-              </Text>
-            </View>
-          ),
-        }}
-      />
-    </Tab.Navigator>
-  );
-}
-
 function DrawerNavigator() {
   return (
     <Drawer.Navigator
-      drawerContent={CustomDrawerContent}
       screenOptions={{
         headerShown: false,
         drawerStyle: {
-          backgroundColor: '#fff',
-          width: 280,
+          width: '75%',
         },
       }}
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
-      <Drawer.Screen name='Main' component={TabNavigator} />
+      <Drawer.Screen
+        name='Home'
+        component={HomeScreen}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name='home' size={size} color={color} />
+          ),
+          title: '首页',
+        }}
+      />
     </Drawer.Navigator>
   );
 }
 
 export default function Navigation() {
-  const { isLoaded, isSignedIn } = useAuth();
-
-  if (!isLoaded) {
-    return null;
-  }
+  const { isSignedIn } = useAuth();
 
   return (
     <NavigationContainer>
@@ -294,28 +129,37 @@ export default function Navigation() {
           </>
         ) : (
           <>
-            <Stack.Group screenOptions={{ headerShown: false }}>
-              <Stack.Screen name='Root' component={DrawerNavigator} />
-            </Stack.Group>
-
-            <Stack.Group
-              screenOptions={{
-                presentation: 'modal',
-                headerShown: false,
-                headerShadowVisible: false,
-                headerStyle: { backgroundColor: 'white' },
-                contentStyle: { backgroundColor: 'white' },
-                fullScreenGestureEnabled: true,
-              }}
-            >
-              <Stack.Screen
-                name='AddGoal'
-                component={AddGoalScreen}
-                options={{
-                  title: "How's your day?",
-                }}
-              />
-            </Stack.Group>
+            <Stack.Screen name='DrawerRoot' component={DrawerNavigator} />
+            <Stack.Screen
+              name='Home'
+              component={HomeScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name='AddGoal'
+              component={AddGoalScreen}
+              options={{ headerShown: false, presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name='TaskList'
+              component={TaskListScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name='TaskCompletion'
+              component={TaskCompletionScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name='StoryList'
+              component={StoryListScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name='StoryDetail'
+              component={StoryDetailScreen}
+              options={{ headerShown: false }}
+            />
           </>
         )}
       </Stack.Navigator>

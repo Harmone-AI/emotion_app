@@ -1,6 +1,6 @@
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Story } from '../types/story';
+import { Story } from './story';
 
 export type DrawerParamList = {
   Home: undefined;
@@ -20,6 +20,5 @@ export type RootStackParamList = {
   StoryDetail: Story;
 };
 
-export type RootStackNavigationProp =
-  NativeStackNavigationProp<RootStackParamList>;
+export type RootStackNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export type CustomDrawerNavigationProp = DrawerNavigationProp<DrawerParamList>;

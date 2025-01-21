@@ -1,10 +1,10 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { Text, TouchableOpacity } from 'react-native';
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetTextInput,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
+import React, { useCallback, useRef, useState } from 'react';
+import { Text, TouchableOpacity } from 'react-native';
 
 type AddGoalSheetProps = {
   isOpen: boolean;
@@ -19,6 +19,7 @@ export default function AddGoalSheet({
 }: AddGoalSheetProps) {
   const [newGoal, setNewGoal] = useState('');
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = ['50%'];
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -26,7 +27,7 @@ export default function AddGoalSheet({
         {...props}
         disappearsOnIndex={-1}
         appearsOnIndex={0}
-        opacity={0.5}
+        opacity={0.7}
       />
     ),
     []
@@ -40,45 +41,49 @@ export default function AddGoalSheet({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      snapPoints={['50%']}
-      onChange={(index) => {
-        if (index === -1) {
-          onClose();
-        }
-      }}
-      enablePanDownToClose
+      snapPoints={snapPoints}
       index={isOpen ? 0 : -1}
+      enablePanDownToClose
+      onClose={onClose}
       backdropComponent={renderBackdrop}
       handleIndicatorStyle={{
-        backgroundColor: '#9333ea',
-        width: 40,
+        backgroundColor: '#666',
+        width: 32,
       }}
       backgroundStyle={{
-        backgroundColor: 'white',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
+        backgroundColor: '#333333',
       }}
-      android_keyboardInputMode='adjustResize'
+      style={{
+        zIndex: 100,
+        flex: 1,
+      }}
     >
-      <BottomSheetView className='flex-1 px-6 pt-2'>
-        <Text className='text-xl font-semibold text-gray-900 mb-6'>
+      <BottomSheetView className='flex-1 px-6 pt-2 pb-10'>
+        <Text className='text-xl font-semibold text-white mb-6'>
           添加新目标
         </Text>
+
         <BottomSheetTextInput
-          className='bg-gray-50 rounded-xl px-4 py-3 text-base text-gray-900'
-          placeholder='输入你的目标...'
           value={newGoal}
           onChangeText={setNewGoal}
-          multiline
+          placeholder='输入你的目标...'
+          placeholderTextColor='#666'
+          className='bg-[#222222] text-white px-4 py-3 rounded-xl mb-6'
+          style={{
+            fontSize: 16,
+          }}
         />
+
         <TouchableOpacity
-          className='bg-purple-600 rounded-xl py-4 mt-6'
           onPress={handleAddGoal}
+          className='h-12 bg-white rounded-xl items-center justify-center'
         >
-          <Text className='text-white text-center font-semibold'>添加</Text>
+          <Text className='text-[#333333] font-medium text-base'>确认添加</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheet>

@@ -1,5 +1,3 @@
-export interface Todo {
-  id: number;
-  title: string;
-  completed: boolean;
-}
+import { Todo } from '../../types/todo';
+
+export type { Todo };
