@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Emotion App",
-    "slug": "emotion_app",
+    "name": "Harmone AI",
+    "slug": "harmone_ai",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,14 +10,21 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.harmone.emotion-app"
+      "bundleIdentifier": "com.harmone.harmoneai",
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.harmone.emotionapp"
+      "package": "com.harmone.harmoneai",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       [
@@ -42,6 +49,12 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6836d526-773a-4bf2-82d4-6a3eca5cafae"
+      }
+    },
+    "owner": "harmone"
   }
 }

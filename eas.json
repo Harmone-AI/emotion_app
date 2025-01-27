@@ -1,0 +1,36 @@
+{
+  "cli": {
+    "version": ">= 14.1.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        // Clerk 的 api key
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_c3RhYmxlLW11c2tveC0yNi5jbGVyay5hY2NvdW50cy5kZXYk",
+        // 应用的 API URL
+        "EXPO_PUBLIC_ENDPOINT_URL": "https://harmone.ai/new/api/"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        // Clerk 的 api key
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_c3RhYmxlLW11c2tveC0yNi5jbGVyay5hY2NvdW50cy5kZXYk",
+        // 应用的 API URL
+        "EXPO_PUBLIC_ENDPOINT_URL": "https://harmone.ai/new/api/"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
