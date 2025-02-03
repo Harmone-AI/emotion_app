@@ -8,10 +8,12 @@ import {
   TouchableWithoutFeedback,
   View,
   Platform,
+  Image,
+  SafeAreaView,
 } from 'react-native';
 import React from 'react';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
+const logoImage = require("@/assets/login/logo.png")
 type AuthStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
@@ -27,71 +29,30 @@ type Props = {
 };
 
 export default function SignInScreen({ navigation }: Props) {
-  const { signIn, setActive, isLoaded } = useSignIn();
-  const [emailAddress, setEmailAddress] = React.useState('');
-  const [password, setPassword] = React.useState('');
 
-  const onSignInPress = async () => {
-    if (!isLoaded) {
-      return;
-    }
-
-    try {
-      const completeSignIn = await signIn.create({
-        identifier: emailAddress,
-        password,
-      });
-
-      await setActive({ session: completeSignIn.createdSessionId });
-    } catch (err: any) {
-      console.error(JSON.stringify(err, null, 2));
-    }
+  const login = async () => {
+    navigation.push("Home");
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className='flex-1'
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View className='flex-1 bg-white p-6 justify-center'>
-          <Text className='text-2xl font-semibold mb-6 text-center'>
-            Sign in
-          </Text>
-          <TextInput
-            className='w-full bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200'
-            autoCapitalize='none'
-            value={emailAddress}
-            placeholder='Enter email'
-            onChangeText={setEmailAddress}
-            keyboardType='email-address'
-            returnKeyType='next'
-          />
-          <TextInput
-            className='w-full bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200'
-            value={password}
-            placeholder='Enter password'
-            secureTextEntry={true}
-            onChangeText={setPassword}
-            returnKeyType='done'
-            onSubmitEditing={onSignInPress}
-          />
-          <TouchableOpacity
-            className='bg-purple-600 rounded-lg p-4 mb-6'
-            onPress={onSignInPress}
-          >
-            <Text className='text-white text-center font-semibold'>
-              Sign in
-            </Text>
-          </TouchableOpacity>
-          <View className='flex-row justify-center items-center space-x-2'>
-            <Text className='text-gray-600'>Don't have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-              <Text className='text-purple-600 font-semibold'>Sign up</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    <SafeAreaView style={{ flex: 1, paddingTop: 80, backgroundColor: "#e8eff3", alignItems: "center", padding: 20 }}>
+      <View style={{ flex: 1 }}></View>
+      <Image style={{ width: 185, height: 189 }} source={logoImage}></Image>
+      <Text style={{ fontWeight: "bold", fontSize: 20, marginTop: 10 }}>
+        Welcome to Harmone!
+      </Text>
+      <View style={{ flex: 1 }}></View>
+      <TouchableOpacity onPress={() => {
+        login();
+      }} style={{ backgroundColor: "#fff", alignItems: "center", justifyContent: "center", padding: 10, borderRadius: 12, flexDirection: "row", width: "100%" }}>
+        <Image style={{ width: 24, height: 24, marginRight: 10 }} source={require("@/assets/login/apple.png")}></Image>
+        <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>Sign in with Apple</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={{ backgroundColor: "#fff", marginHorizontal: 15, alignItems: "center", justifyContent: "center", padding: 10, borderRadius: 12, marginTop: 20,flexDirection: "row", width: "100%" }}>
+        <Image style={{ width: 24, height: 24, marginRight: 10 }} source={require("@/assets/login/google.png")}></Image>
+        <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>Sign in with Apple</Text>
+      </TouchableOpacity>
+      <Text style={{ paddingTop:20, marginBottom: 100, color: "#999", fontWeight: "bold" }}>Logging In Indicates That You Have Read And Agreed To Our <Text style={{ color: "#000" }}>Terms Of Service</Text> And  <Text style={{ color: "#000" }}>Privacy Policy.</Text></Text>
+    </SafeAreaView>
   );
 }

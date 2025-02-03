@@ -122,46 +122,48 @@ export default function Navigation() {
           headerShown: false,
         }}
       >
-        {!isSignedIn ? (
+        {/* {!isSignedIn ? (
           <>
             <Stack.Screen name='SignIn' component={SignInScreen} />
             <Stack.Screen name='SignUp' component={SignUpScreen} />
           </>
-        ) : (
-          <>
-            <Stack.Screen name='DrawerRoot' component={DrawerNavigator} />
-            <Stack.Screen
-              name='Home'
-              component={HomeScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name='AddGoal'
-              component={AddGoalScreen}
-              options={{ headerShown: false, presentation: 'modal' }}
-            />
-            <Stack.Screen
-              name='TaskList'
-              component={TaskListScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name='TaskCompletion'
-              component={TaskCompletionScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name='StoryList'
-              component={StoryListScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name='StoryDetail'
-              component={StoryDetailScreen}
-              options={{ headerShown: false }}
-            />
-          </>
-        )}
+        ) : ( */}
+        <>
+          <Stack.Screen name='SignIn' component={SignInScreen} />
+          <Stack.Screen name='SignUp' component={SignUpScreen} />
+          <Stack.Screen name='DrawerRoot' component={DrawerNavigator} />
+          <Stack.Screen
+            name='Home'
+            component={HomeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name='AddGoal'
+            component={AddGoalScreen}
+            options={{ headerShown: false, presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name='TaskList'
+            component={TaskListScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name='TaskCompletion'
+            component={TaskCompletionScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name='StoryList'
+            component={StoryListScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name='StoryDetail'
+            component={StoryDetailScreen}
+            options={{ headerShown: false }}
+          />
+        </>
+        {/* )} */}
       </Stack.Navigator>
     </NavigationContainer>
   );

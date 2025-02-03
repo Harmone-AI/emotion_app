@@ -1,10 +1,9 @@
 import { RootStackNavigationProp } from '@/navigation/types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import {
-  ExpoSpeechRecognitionModule,
-  useSpeechRecognitionEvent,
-} from 'expo-speech-recognition';
+// import {
+//   useSpeechRecognitionEvent,
+// } from 'expo-speech-recognition';
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -33,29 +32,29 @@ export default function AddGoalScreen() {
   // 使用 react-query 的 mutation
   const { mutate: word2TaskList, isPending } = useWord2TaskList();
 
-  // 处理语音识别事件
-  useSpeechRecognitionEvent('start', () => {
-    setIsListening(true);
-    // 开始波形动画
-    startWaveformAnimation();
-  });
+  // // 处理语音识别事件
+  // useSpeechRecognitionEvent('start', () => {
+  //   setIsListening(true);
+  //   // 开始波形动画
+  //   startWaveformAnimation();
+  // });
 
-  useSpeechRecognitionEvent('end', () => {
-    setIsListening(false);
-    // 停止波形动画
-    stopWaveformAnimation();
-  });
+  // useSpeechRecognitionEvent('end', () => {
+  //   setIsListening(false);
+  //   // 停止波形动画
+  //   stopWaveformAnimation();
+  // });
 
-  useSpeechRecognitionEvent('result', (event) => {
-    if (event.results[0]?.transcript) {
-      setFeeling(event.results[0].transcript);
-    }
-  });
+  // useSpeechRecognitionEvent('result', (event) => {
+  //   if (event.results[0]?.transcript) {
+  //     setFeeling(event.results[0].transcript);
+  //   }
+  // });
 
-  useSpeechRecognitionEvent('error', (event) => {
-    console.log('error code:', event.error, 'error message:', event.message);
-    Alert.alert('Error', '语音识别失败，请重试');
-  });
+  // useSpeechRecognitionEvent('error', (event) => {
+  //   console.log('error code:', event.error, 'error message:', event.message);
+  //   Alert.alert('Error', '语音识别失败，请重试');
+  // });
 
   // 波形动画
   const startWaveformAnimation = () => {
@@ -106,34 +105,11 @@ export default function AddGoalScreen() {
   }, [isListening, pulseAnim]);
 
   const startListening = async () => {
-    try {
-      const result =
-        await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-      if (!result.granted) {
-        Alert.alert('需要权限', '请允许使用麦克风以启用语音输入');
-        return;
-      }
-
-      ExpoSpeechRecognitionModule.start({
-        lang: 'en-US',
-        interimResults: true,
-        maxAlternatives: 1,
-        continuous: false,
-        requiresOnDeviceRecognition: false,
-        addsPunctuation: true,
-      });
-    } catch (error) {
-      console.error(error);
-      Alert.alert('错误', '无法启动语音识别，请重试');
-    }
+   
   };
 
   const stopListening = () => {
-    try {
-      ExpoSpeechRecognitionModule.stop();
-    } catch (error) {
-      console.error(error);
-    }
+    
   };
 
   const handleSubmit = () => {
