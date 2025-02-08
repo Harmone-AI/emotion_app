@@ -47,6 +47,8 @@ export default function AddGoalScreen() {
   });
 
   useSpeechRecognitionEvent('result', (event) => {
+
+    console.log("result====",event.results[0].transcript);
     if (event.results[0]?.transcript) {
       setFeeling(event.results[0].transcript);
     }

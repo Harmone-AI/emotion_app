@@ -63,6 +63,8 @@ export default function InputView({ navigation, onClose }: any) {
     setShowLoading(false);
   }
 
+
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#e8eff3', paddingTop: 20, zIndex: 100, paddingHorizontal: 20 }}>

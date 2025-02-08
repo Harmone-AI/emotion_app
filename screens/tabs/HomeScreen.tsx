@@ -14,13 +14,26 @@ import {
   View,
   Image,
   Animated,
-  Dimensions
+  Dimensions,
+  Button,
+  Alert,
+  StatusBar
 } from 'react-native';
 import InputView from '../home/inputView';
 import PopView from '@/components/PopView';
 import TaskList from '../task/taskList';
 const animalImage = require("@/assets/animal.png")
 const { width, height } = Dimensions.get('window')
+import * as api from "@/api/api"
+
+
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from "expo-speech-recognition";
+import Loading from '@/components/Loading';
+import RecordingView from '@/components/RecordingView';
+
 
 export default function HomeScreen({ navigation }: any) {
   const [currentValue, setCurrentValue] = useState(0);
@@ -31,6 +44,59 @@ export default function HomeScreen({ navigation }: any) {
 
   const [recording, setRecording] = useState(false);
   const [showRecording, setShowRecording] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
+
+
+  const [recognizing, setRecognizing] = useState(false);
+  const [transcript, setTranscript] = useState("");
+
+  const [cancel, setCancel] = useState(false);
+
+  useSpeechRecognitionEvent("start", () => setRecognizing(true));
+  useSpeechRecognitionEvent("end", () => setRecognizing(false));
+  useSpeechRecognitionEvent("result", (event) => {
+    if (!cancel) {
+      console.log("result====", event.results[0].transcript);
+      setTranscript(event.results[0]?.transcript);
+      done();
+    }
+  });
+  useSpeechRecognitionEvent("error", (event) => {
+    if (!cancel) {
+      Alert.alert(event.message);
+      console.log("error code:", event.error, "error message:", event.message);
+      setRecording(false);
+    }
+
+  });
+
+  const handleStart = async () => {
+    const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!result.granted) {
+      console.warn("Permissions not granted", result);
+      return;
+    }
+    // Start speech recognition
+    ExpoSpeechRecognitionModule.start({
+      lang: "en-US",
+      interimResults: true,
+      maxAlternatives: 1,
+      continuous: false,
+      requiresOnDeviceRecognition: false,
+      addsPunctuation: false,
+      contextualStrings: ["Carlsen", "Nepomniachtchi", "Praggnanandhaa"],
+    });
+  };
+
+  const done = async () => {
+    setShowLoading(true);
+    let res = await api.word2tasklist({
+      "user_input": transcript,
+      "user_id": 1
+    });
+
+    setShowLoading(false);
+  }
 
   const clickAdd = () => {
     console.log("clickadd");
@@ -68,7 +134,7 @@ export default function HomeScreen({ navigation }: any) {
     return () => {
       rotation.removeListener(listenerId);
     };
-  }, [rotation]);
+  }, [rotation,showRecording]);
 
   const clickInput = () => {
     setShowInputView(true);
@@ -80,7 +146,7 @@ export default function HomeScreen({ navigation }: any) {
   });
 
   let keyboardLeftStart = width / 2 - 48;
-  let keyboardLeftEnd = width / 4 - 48;
+  let keyboardLeftEnd = width / 3 - 48;
   let keyboardLeft = keyboardLeftStart + (keyboardLeftEnd - keyboardLeftStart) * currentValue;
 
 
@@ -90,7 +156,7 @@ export default function HomeScreen({ navigation }: any) {
 
 
   let voiceLeftStart = width / 2 - 48;
-  let voiceLeftEnd = width * 3 / 4 - 48;
+  let voiceLeftEnd = width * 2 / 3 - 48;
   let voiceLeft = voiceLeftStart + (voiceLeftEnd - voiceLeftStart) * currentValue;
 
 
@@ -100,7 +166,23 @@ export default function HomeScreen({ navigation }: any) {
 
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#e8eff3', paddingTop: 50 }}>
+    <SafeAreaView onTouchStart={() => {
+      if (showRecording) {
+        setRecording(false);
+        setShowRecording(false);
+        setCurrentValue(0);
+        rotation.setValue(0);
+        clickAdd();
+
+      }
+      else if (currentValue == 1) {
+        setShowRecording(false);
+        setShowRecording(false);
+        clickAdd();
+      }
+
+    }} style={{ flex: 1, backgroundColor: '#e8eff3', paddingTop: 10 }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#e8eff3" />
       <View style={{
         flexDirection: "row",
         alignItems: "center",
@@ -126,7 +208,8 @@ export default function HomeScreen({ navigation }: any) {
         !showRecording && <View style={{ display: "flex", alignItems: "center", paddingBottom: 40, position: "relative" }}>
 
           <Animated.View
-            onTouchStart={() => {
+            onTouchStart={(event) => {
+              event.stopPropagation();
               clickInput();
             }}
             style={[
@@ -140,7 +223,8 @@ export default function HomeScreen({ navigation }: any) {
           </Animated.View>
 
           <Animated.View
-            onTouchStart={() => {
+            onTouchStart={(event) => {
+              event.stopPropagation();
               setShowRecording(true);
             }}
             style={[
@@ -155,7 +239,8 @@ export default function HomeScreen({ navigation }: any) {
 
 
           <Animated.View
-            onTouchStart={() => {
+            onTouchStart={(event) => {
+              event.stopPropagation();
               clickAdd();
             }}
             style={[
@@ -186,14 +271,27 @@ export default function HomeScreen({ navigation }: any) {
         showRecording && <View style={{ position: "absolute", left: 0, bottom: 50, right: 0, alignItems: "center" }}>
           {
             recording && <View style={{ alignItems: "center" }}>
-              <Image style={{ width: 11, height: 6 }} source={require("@/assets/home/arrowup.png")}></Image>
+              <RecordingView></RecordingView>
+
+              <Image style={{ width: 11, height: 6, marginTop: 20 }} source={require("@/assets/home/arrowup.png")}></Image>
               <Text>Swipe up to cancel</Text>
             </View>
           }
 
-          <Animated.View
-            onTouchStart={() => {
+          {showLoading ? <View style={{ width: 60, height: 60, backgroundColor: '#fff', borderRadius: 40, alignItems: "center", justifyContent: "center" }}> <Loading></Loading>  </View> : <Animated.View
+            onTouchStart={(event) => {
+              event.stopPropagation();
               setRecording(true);
+              handleStart();
+              setCancel(false);
+            }}
+            onTouchMove={() => {
+              setRecording(false);
+              setCancel(true);
+              ExpoSpeechRecognitionModule.stop();
+            }}
+            onTouchEnd={() => {
+              ExpoSpeechRecognitionModule.stop();
             }}
             style={[
               { width: 64, height: 64, backgroundColor: recording ? "#FF7C14" : "#fff", borderRadius: 60, alignItems: "center", justifyContent: "center", marginTop: 30 },
@@ -202,11 +300,27 @@ export default function HomeScreen({ navigation }: any) {
               },
             ]}
           >
-            <Image style={{ width: 40, height: 40 }} source={recording? require("@/assets/home/voicewhite.png"): require("@/assets/home/voice.png")}></Image>
-          </Animated.View>
+            <Image style={{ width: 40, height: 40 }} source={recording ? require("@/assets/home/voicewhite.png") : require("@/assets/home/voice.png")}></Image>
+          </Animated.View>}
 
         </View>
       }
+
+      {/* <View>
+        {!recognizing ? (
+          <Button title="Start" onPress={handleStart} />
+        ) : (
+          <Button
+            title="Stop"
+            onPress={() => ExpoSpeechRecognitionModule.stop()}
+          />
+        )}
+
+        <ScrollView>
+          <Text>{transcript}</Text>
+        </ScrollView>
+      </View> */}
+
     </SafeAreaView>
   );
 }

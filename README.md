@@ -53,3 +53,5 @@ Join our community of developers creating universal apps.
 https://www.figma.com/design/lJMnRB3O6OpsRvK17wCnsz/Harmone-%E8%AE%BE%E8%AE%A1?node-id=0-1&p=f&t=UQ1fMMJJkKkhwWSz-0
 
 https://pbxi4jdmv99.larksuite.com/wiki/V9wfws6CGi1FAYklWIhuy1A1sIc?from=from_copylink
+
+https://github.com/Harmone-AI/emotion_app

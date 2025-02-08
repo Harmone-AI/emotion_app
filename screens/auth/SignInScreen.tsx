@@ -10,9 +10,12 @@ import {
   Platform,
   Image,
   SafeAreaView,
+  StatusBar,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+
 const logoImage = require("@/assets/login/logo.png")
 type AuthStackParamList = {
   SignIn: undefined;
@@ -31,11 +34,15 @@ type Props = {
 export default function SignInScreen({ navigation }: Props) {
 
   const login = async () => {
+
     navigation.push("Home");
   };
 
+
   return (
     <SafeAreaView style={{ flex: 1, paddingTop: 80, backgroundColor: "#e8eff3", alignItems: "center", padding: 20 }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#e8eff3" />
+
       <View style={{ flex: 1 }}></View>
       <Image style={{ width: 185, height: 189 }} source={logoImage}></Image>
       <Text style={{ fontWeight: "bold", fontSize: 20, marginTop: 10 }}>
@@ -48,11 +55,11 @@ export default function SignInScreen({ navigation }: Props) {
         <Image style={{ width: 24, height: 24, marginRight: 10 }} source={require("@/assets/login/apple.png")}></Image>
         <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>Sign in with Apple</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={{ backgroundColor: "#fff", marginHorizontal: 15, alignItems: "center", justifyContent: "center", padding: 10, borderRadius: 12, marginTop: 20,flexDirection: "row", width: "100%" }}>
+      <TouchableOpacity style={{ backgroundColor: "#fff", marginHorizontal: 15, alignItems: "center", justifyContent: "center", padding: 10, borderRadius: 12, marginTop: 20, flexDirection: "row", width: "100%" }}>
         <Image style={{ width: 24, height: 24, marginRight: 10 }} source={require("@/assets/login/google.png")}></Image>
-        <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>Sign in with Apple</Text>
+        <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>Sign in with Google</Text>
       </TouchableOpacity>
-      <Text style={{ paddingTop:20, marginBottom: 100, color: "#999", fontWeight: "bold" }}>Logging In Indicates That You Have Read And Agreed To Our <Text style={{ color: "#000" }}>Terms Of Service</Text> And  <Text style={{ color: "#000" }}>Privacy Policy.</Text></Text>
+      <Text style={{ paddingTop: 20, marginBottom: 100, color: "#999", fontWeight: "bold" }}>Logging In Indicates That You Have Read And Agreed To Our <Text style={{ color: "#000" }}>Terms Of Service</Text> And  <Text style={{ color: "#000" }}>Privacy Policy.</Text></Text>
     </SafeAreaView>
   );
 }

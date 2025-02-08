@@ -95,8 +95,8 @@ export default function CreateView({ navigation, onClose, userInput }: any) {
 
       </View>
       <View style={{ marginVertical: 20 }}>
-        {list.map((item: any) => {
-          return <View style={{ height: 56, width: "100%", boxShadow: "2px 2px 2px #00000022", borderRadius: 20, paddingVertical: 10, marginBottom: 20, paddingHorizontal: 8, borderWidth: 2, borderColor: "#00000022", alignItems: "center", flexDirection: "row" }}>
+        {list.map((item: any,index:any) => {
+          return <View key={index} style={{ height: 56, width: "100%", boxShadow: "2px 2px 2px #00000022", borderRadius: 20, paddingVertical: 10, marginBottom: 20, paddingHorizontal: 8, borderWidth: 2, borderColor: "#00000022", alignItems: "center", flexDirection: "row" }}>
             <Text style={{ fontSize: 14, fontWeight: "bold", flex: 1 }}>{item.content}</Text>
             <TouchableOpacity style={{ width: 40, height: 40, borderWidth: 2, borderRadius: 40, borderColor: "#E0E0E0" }}></TouchableOpacity>
           </View>
