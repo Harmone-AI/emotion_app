@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useP, useScaleSize } from '@/hooks/useScreen';
+import AppButton from '@/components/AppButton';
 
 
 const logoImage = require("@/assets/login/logo.png")
@@ -38,6 +40,8 @@ export default function SignInScreen({ navigation }: Props) {
     navigation.push("Home");
   };
 
+  const scaleSize = useScaleSize()
+  console.log(scaleSize(378))
 
   return (
     <SafeAreaView style={{ flex: 1, paddingTop: 80, backgroundColor: "#e8eff3", alignItems: "center", padding: 20 }}>
@@ -49,17 +53,22 @@ export default function SignInScreen({ navigation }: Props) {
         Welcome to Harmone!
       </Text>
       <View style={{ flex: 1 }}></View>
-      <TouchableOpacity onPress={() => {
+      <AppButton onPress={() => {
         login();
-      }} style={{ backgroundColor: "#fff", alignItems: "center", justifyContent: "center", padding: 10, borderRadius: 12, flexDirection: "row", width: "100%" }}>
+      }} style={{ backgroundColor: "#fff", alignItems: "center", justifyContent: "center", padding: 10, borderRadius: 12, flexDirection: "row", width: scaleSize(378), alignSelf: 'center' }}>
         <Image style={{ width: 24, height: 24, marginRight: 10 }} source={require("@/assets/login/apple.png")}></Image>
         <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>Sign in with Apple</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={{ backgroundColor: "#fff", marginHorizontal: 15, alignItems: "center", justifyContent: "center", padding: 10, borderRadius: 12, marginTop: 20, flexDirection: "row", width: "100%" }}>
+      </AppButton>
+      <View style={{ height: scaleSize(8) }} />
+      <AppButton style={{ backgroundColor: "#fff", marginHorizontal: 15, alignItems: "center", justifyContent: "center", padding: 10, borderRadius: 12, flexDirection: "row", width: scaleSize(378) }}>
         <Image style={{ width: 24, height: 24, marginRight: 10 }} source={require("@/assets/login/google.png")}></Image>
         <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>Sign in with Google</Text>
-      </TouchableOpacity>
-      <Text style={{ paddingTop: 20, marginBottom: 100, color: "#999", fontWeight: "bold" }}>Logging In Indicates That You Have Read And Agreed To Our <Text style={{ color: "#000" }}>Terms Of Service</Text> And  <Text style={{ color: "#000" }}>Privacy Policy.</Text></Text>
+      </AppButton>
+      <View style={{
+        width: scaleSize(358)
+      }}>
+        <Text style={{ paddingTop: 20, marginBottom: 100, color: "#999", fontWeight: "bold" }}>Logging In Indicates That You Have Read And Agreed To Our <Text style={{ color: "#000" }}>Terms Of Service</Text> And  <Text style={{ color: "#000" }}>Privacy Policy.</Text></Text>
+      </View>
     </SafeAreaView>
   );
 }

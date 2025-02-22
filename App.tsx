@@ -10,6 +10,7 @@ import Navigation from './navigation';
 import './style.css';
 
 import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
+import { PostHogProvider } from 'posthog-react-native'
 
 const queryClient = new QueryClient({
   defaultOptions: {
