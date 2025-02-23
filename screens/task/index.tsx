@@ -2,21 +2,38 @@ import { HBase } from "@/components/HBase";
 import Page from "@/components/Page";
 import { useScaleSize } from "@/hooks/useScreen";
 import { Image } from "expo-image";
-import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScrollView, View } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useState } from "react";
 import React from "react";
 import AppButton from "@/components/AppButton";
 import { useNavigation } from "@react-navigation/native";
+import { TaskTarget } from "@/api/api";
+import StorageHelper from "@/hooks/storage";
 
 export default function TaskScreen() {
   const scaleSize = useScaleSize();
-  const [percent, setPercent] = useState(0.5);
   const navigation = useNavigation();
+  const [taskTarget, setTaskTarget] = useState<TaskTarget | null>(
+    StorageHelper.latestTarget
+  );
+  const taskIds = taskTarget?.taskids.split(",");
+  const finishedCount =
+    taskIds?.filter((id) => StorageHelper.tasks?.[Number(id)]?.status === 1)
+      .length || 0;
+  const percent = finishedCount / (taskTarget?.taskids.split(",").length || 0);
+  const insets = useSafeAreaInsets();
   return (
-    <View style={{ backgroundColor: "#e6eff4" }}>
-      <SafeAreaView
-        style={{
+    <Page
+      style={{
+        backgroundColor: "#e6eff4",
+        paddingBottom: scaleSize(insets.bottom || 20),
+      }}
+      safeAreaProps={{
+        style: {
           width: scaleSize(370),
           alignSelf: "center",
           borderRadius: scaleSize(24),
@@ -24,9 +41,12 @@ export default function TaskScreen() {
           overflow: "hidden",
           minHeight: scaleSize(500),
           flex: 1,
-        }}
-        mode="margin"
-      >
+        },
+        mode: "margin",
+      }}
+      scrollEnabled={false}
+    >
+      <ScrollView>
         <View
           style={{
             backgroundColor: "#F29762",
@@ -69,7 +89,7 @@ export default function TaskScreen() {
             marginTop: scaleSize(12),
           }}
         >
-          Braincell Deathmatch
+          {taskTarget?.quest_title}
         </HBase>
         <HBase
           style={{
@@ -80,32 +100,9 @@ export default function TaskScreen() {
             textAlign: "center",
           }}
         >
-          “ruthless or not?”
+          {taskTarget?.user_title}
         </HBase>
-        <AppButton
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: scaleSize(40),
-            width: scaleSize(40),
-            height: scaleSize(40),
-            justifyContent: "center",
-            alignItems: "center",
-            position: "absolute",
-            top: scaleSize(18),
-            right: scaleSize(16),
-          }}
-          onPress={() => {
-            navigation.goBack();
-          }}
-        >
-          <Image
-            source={require("@/assets/images/close.svg")}
-            style={{
-              width: scaleSize(24),
-              height: scaleSize(24),
-            }}
-          />
-        </AppButton>
+
         <View
           style={{
             borderRadius: scaleSize(52),
@@ -149,7 +146,7 @@ export default function TaskScreen() {
                 color: "#f29762",
               }}
             >
-              5/20
+              {finishedCount}/{taskTarget?.taskids.split(",").length || ""}
             </HBase>
           </View>
           <View
@@ -171,128 +168,158 @@ export default function TaskScreen() {
             />
           </View>
         </View>
-        <View style={{ flex: 1 }}>
-          <View
-            style={{
-              alignSelf: "center",
-              shadowColor: "#e5e5e5",
-              shadowOffset: {
-                width: 0,
-                height: 3,
-              },
-              shadowRadius: 0,
-              elevation: 0,
-              shadowOpacity: 1,
-              borderRadius: 12,
-              backgroundColor: "#fff",
-              borderColor: "#e5e5e5",
-              borderWidth: scaleSize(2),
-              width: scaleSize(338),
-              height: scaleSize(56),
-              flexDirection: "row",
-              alignItems: "center",
-              marginTop: scaleSize(40),
-              paddingLeft: scaleSize(12),
-              paddingRight: scaleSize(12),
-            }}
-          >
-            <HBase
-              style={{
-                fontSize: scaleSize(14),
-                lineHeight: 20,
-                textTransform: "capitalize",
-                fontWeight: "700",
-                fontFamily: "SF Pro Rounded",
-                color: "#333",
-                textAlign: "left",
-                flex: 1,
-              }}
-            >
-              Open study materials
-            </HBase>
-            <View
-              style={{
-                borderColor: "#e0e0e0",
-                borderRadius: scaleSize(32),
-                borderWidth: scaleSize(2),
-                width: scaleSize(32),
-                height: scaleSize(32),
-              }}
-            />
-          </View>
+        <View style={{ flex: 1, marginTop: scaleSize(40) }}>
+          {taskIds?.map((id, index) => {
+            const task = StorageHelper.tasks?.[Number(id)];
+            return (
+              <View
+                key={id}
+                style={{
+                  alignSelf: "center",
+                  shadowColor: "#e5e5e5",
+                  shadowOffset: {
+                    width: 0,
+                    height: 3,
+                  },
+                  shadowRadius: 0,
+                  elevation: 0,
+                  shadowOpacity: 1,
+                  borderRadius: 12,
+                  backgroundColor: "#fff",
+                  borderColor: "#e5e5e5",
+                  borderWidth: scaleSize(1),
+                  width: scaleSize(338),
+                  height: scaleSize(56),
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: scaleSize(8),
+                  paddingLeft: scaleSize(12),
+                  paddingRight: scaleSize(12),
+                }}
+              >
+                <HBase
+                  style={{
+                    fontSize: scaleSize(14),
+                    lineHeight: 20,
+                    textTransform: "capitalize",
+                    fontWeight: "700",
+                    fontFamily: "SF Pro Rounded",
+                    color: "#333",
+                    textAlign: "left",
+                    flex: 1,
+                  }}
+                >
+                  {task?.content}
+                </HBase>
+                <View
+                  style={{
+                    borderColor: "#e0e0e0",
+                    borderRadius: scaleSize(32),
+                    borderWidth: scaleSize(2),
+                    width: scaleSize(32),
+                    height: scaleSize(32),
+                  }}
+                />
+              </View>
+            );
+          })}
         </View>
-        <View
+      </ScrollView>
+      <AppButton
+        style={{
+          backgroundColor: "#fff",
+          borderRadius: scaleSize(40),
+          width: scaleSize(40),
+          height: scaleSize(40),
+          justifyContent: "center",
+          alignItems: "center",
+          position: "absolute",
+          top: scaleSize(18),
+          right: scaleSize(16),
+        }}
+        onPress={() => {
+          navigation.goBack();
+        }}
+      >
+        <Image
+          source={require("@/assets/images/close.svg")}
           style={{
-            flexDirection: "row",
-            alignSelf: "center",
-            marginBottom: scaleSize(16),
+            width: scaleSize(24),
+            height: scaleSize(24),
+          }}
+        />
+      </AppButton>
+      <View
+        style={{
+          flexDirection: "row",
+          alignSelf: "center",
+          marginBottom: scaleSize(16),
+        }}
+      >
+        <AppButton
+          style={{
+            shadowColor: "#b49300",
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowRadius: 0,
+            elevation: 0,
+            shadowOpacity: 1,
+            borderRadius: 12,
+            backgroundColor: "#ffd000",
+            width: scaleSize(165),
+            height: scaleSize(40),
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <AppButton
+          <HBase
             style={{
-              shadowColor: "#b49300",
-              shadowOffset: {
-                width: 0,
-                height: 2,
-              },
-              shadowRadius: 0,
-              elevation: 0,
-              shadowOpacity: 1,
-              borderRadius: 12,
-              backgroundColor: "#ffd000",
-              width: scaleSize(165),
-              height: scaleSize(40),
-              justifyContent: "center",
-              alignItems: "center",
+              fontSize: scaleSize(15),
+              textTransform: "uppercase",
+              fontWeight: "700",
+              fontFamily: "SF Pro Rounded",
+              color: "#53270d",
+              textAlign: "left",
             }}
           >
-            <HBase
-              style={{
-                fontSize: scaleSize(15),
-                textTransform: "uppercase",
-                fontWeight: "700",
-                fontFamily: "SF Pro Rounded",
-                color: "#53270d",
-                textAlign: "left",
-              }}
-            >
-              Regenerate
-            </HBase>
-          </AppButton>
-          <AppButton
+            Regenerate
+          </HBase>
+        </AppButton>
+        <AppButton
+          style={{
+            marginLeft: scaleSize(8),
+            shadowColor: "#b49300",
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowRadius: 0,
+            elevation: 0,
+            shadowOpacity: 1,
+            borderRadius: 12,
+            backgroundColor: "#FF7C14",
+            width: scaleSize(165),
+            height: scaleSize(40),
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <HBase
             style={{
-              marginLeft: scaleSize(8),
-              shadowColor: "#b49300",
-              shadowOffset: {
-                width: 0,
-                height: 2,
-              },
-              shadowRadius: 0,
-              elevation: 0,
-              shadowOpacity: 1,
-              borderRadius: 12,
-              backgroundColor: "#FF7C14",
-              width: scaleSize(165),
-              height: scaleSize(40),
-              justifyContent: "center",
-              alignItems: "center",
+              fontSize: scaleSize(15),
+              textTransform: "uppercase",
+              fontWeight: "700",
+              fontFamily: "SF Pro Rounded",
+              color: "#fff",
+              textAlign: "left",
             }}
           >
-            <HBase
-              style={{
-                fontSize: scaleSize(15),
-                textTransform: "uppercase",
-                fontWeight: "700",
-                fontFamily: "SF Pro Rounded",
-                color: "#fff",
-                textAlign: "left",
-              }}
-            >
-              confirm
-            </HBase>
-          </AppButton>
-        </View>
-      </SafeAreaView>
-    </View>
+            confirm
+          </HBase>
+        </AppButton>
+      </View>
+    </Page>
   );
 }

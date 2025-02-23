@@ -3,24 +3,33 @@ import {
   ScrollView,
   ScrollViewProps,
   TouchableOpacityProps,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  SafeAreaViewProps,
+} from "react-native-safe-area-context";
 
 export default React.memo(
   React.forwardRef(
     (
-      props: ScrollViewProps & { children?: React.ReactNode },
+      props: ScrollViewProps & { children?: React.ReactNode } & {
+        safeAreaProps: SafeAreaViewProps;
+      },
       ref: ForwardedRef<ScrollView>
     ) => {
-      const { style, children, ...rest } = props;
+      const { style, children, safeAreaProps, ...rest } = props;
+      const PageContainer = rest.scrollEnabled === false ? View : ScrollView;
       return (
-        <ScrollView
+        <PageContainer
           ref={ref}
-          style={[{ backgroundColor: "#fff" }, style]}
+          style={[{ backgroundColor: "#fff", flex: 1 }, style]}
           {...rest}
         >
-          {children}
-        </ScrollView>
+          <SafeAreaView style={{ flex: 1 }} {...safeAreaProps}>
+            {children}
+          </SafeAreaView>
+        </PageContainer>
       );
     }
   )

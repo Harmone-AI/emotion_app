@@ -21,6 +21,7 @@ export type RootStackParamList = {
   tasks: undefined;
   task: undefined;
   story: undefined;
+  "keyboard-input-target": undefined;
 };
 
 export type RootStackNavigationProp =

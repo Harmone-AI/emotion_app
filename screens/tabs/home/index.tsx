@@ -13,10 +13,8 @@ import {
   Button,
   Alert,
   StatusBar,
+  useAnimatedValue,
 } from "react-native";
-import InputView from "../../home/inputView";
-import PopView from "@/components/PopView";
-import TaskList from "../../tasks";
 const animalImage = require("@/assets/animal.png");
 const { width, height } = Dimensions.get("window");
 import * as api from "@/api/api";
@@ -29,13 +27,14 @@ import Loading from "@/components/Loading";
 import RecordingView from "@/components/RecordingView";
 import AppButton from "@/components/AppButton";
 import { useScaleSize } from "@/hooks/useScreen";
+import Ionicons from "@expo/vector-icons/Ionicons";
+
+const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
 export default function HomeScreen({ navigation }: any) {
-  const [currentValue, setCurrentValue] = useState(0);
-
-  const [rotation, setRotation] = useState(new Animated.Value(0));
-  const [showInputView, setShowInputView] = useState(false);
-  const [showTaskList, setShowTaskList] = useState(false);
+  const rotationAnimatedValue = useAnimatedValue(1, {
+    useNativeDriver: true,
+  });
 
   const [recording, setRecording] = useState(false);
   const [showRecording, setShowRecording] = useState(false);
@@ -92,82 +91,39 @@ export default function HomeScreen({ navigation }: any) {
   };
 
   const clickAdd = () => {
-    console.log("clickadd");
-    // 创建一个平移 + 透明度的动画
-    if (currentValue == 0) {
-      Animated.timing(rotation, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => {
-        // rotation.setValue(0); // 重置旋转
-      });
-    } else {
-      Animated.timing(rotation, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => {
-        // rotation.setValue(0); // 重置旋转
-      });
-    }
-  };
-
-  useEffect(() => {
-    // 监听动画值的变化
-    const listenerId = rotation.addListener(({ value }) => {
-      console.log("value===", value);
-      setCurrentValue(value);
+    Animated.timing(rotationAnimatedValue, {
+      toValue: rotationAnimatedValue._value > 0 ? 0 : 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      // rotationAnimatedValue.setValue(0); // 重置旋转
     });
-
-    // 清除监听器
-    return () => {
-      rotation.removeListener(listenerId);
-    };
-  }, [rotation, showRecording]);
+  };
 
   const clickInput = () => {
-    setShowInputView(true);
+    navigation.navigate("keyboard-input-target");
   };
 
-  const rotateInterpolate = rotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "135deg"], // 从0度旋转到360度
-  });
-
-  let keyboardLeftStart = width / 2 - 48;
-  let keyboardLeftEnd = width / 3 - 48;
-  let keyboardLeft =
-    keyboardLeftStart + (keyboardLeftEnd - keyboardLeftStart) * currentValue;
-
-  let keyboardBottomStart = 50;
-  let keyboardBottomEnd = 100;
-  let keyboardBottom =
-    keyboardBottomStart +
-    (keyboardBottomEnd - keyboardBottomStart) * currentValue;
-
-  let voiceLeftStart = width / 2 - 48;
-  let voiceLeftEnd = (width * 2) / 3 - 48;
-  let voiceLeft =
-    voiceLeftStart + (voiceLeftEnd - voiceLeftStart) * currentValue;
-
-  let voiceBottomStart = 50;
-  let voiceBottomEnd = 100;
-  let voiceBottom =
-    voiceBottomStart + (voiceBottomEnd - voiceBottomStart) * currentValue;
   const scaleSize = useScaleSize();
+  const keyboardVoiceMargin = 48;
+  const addActionsMargin = 7;
+  const actionButtonSize = 96;
+  const addButtonSize = 64;
+  const addButtonActionsMargin = -8;
+  const actionsTranslateY = scaleSize(
+    actionButtonSize / 2 + addActionsMargin + addButtonSize / 2
+  );
+  const actionsTranslateX = scaleSize(
+    actionButtonSize / 2 + addButtonSize / 2 + addButtonActionsMargin
+  );
+  console.log("actionsTranslateX", actionsTranslateX);
   return (
     <SafeAreaView
       onTouchStart={() => {
         if (showRecording) {
           setRecording(false);
           setShowRecording(false);
-          setCurrentValue(0);
-          rotation.setValue(0);
-          clickAdd();
-        } else if (currentValue == 1) {
-          setShowRecording(false);
-          setShowRecording(false);
+          rotationAnimatedValue.setValue(0);
           clickAdd();
         }
       }}
@@ -181,7 +137,10 @@ export default function HomeScreen({ navigation }: any) {
           justifyContent: "space-between",
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <AppButton
+          onPress={() => navigation.navigate("tasks")}
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
           <View
             style={{
               marginLeft: scaleSize(16),
@@ -219,11 +178,11 @@ export default function HomeScreen({ navigation }: any) {
               }}
             />
           </View>
-        </View>
+        </AppButton>
         <AppButton
           style={{ marginRight: scaleSize(16) }}
           onPress={() => {
-            navigation.navigate("tasks");
+            navigation.navigate("stories");
           }}
         >
           <Image
@@ -236,38 +195,59 @@ export default function HomeScreen({ navigation }: any) {
         <Image style={{ width: 273, height: 371 }} source={animalImage}></Image>
       </View>
       <View style={{ flex: 1 }}></View>
-      {!showRecording && (
+      <View
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          alignSelf: "center",
+        }}
+      >
         <View
           style={{
-            display: "flex",
+            flexDirection: "row",
             alignItems: "center",
-            paddingBottom: 40,
-            position: "relative",
+            justifyContent: "center",
           }}
         >
           <Animated.View
             onTouchStart={(event) => {
-              event.stopPropagation();
               clickInput();
             }}
-            style={[
-              {
-                width: 96,
-                height: 96,
-                backgroundColor: "#fff",
-                borderRadius: 60,
-                alignItems: "center",
-                justifyContent: "center",
-                position: "absolute",
-                left: keyboardLeft,
-                bottom: keyboardBottom,
-                opacity: currentValue,
-              },
-              {},
-            ]}
+            style={{
+              width: scaleSize(actionButtonSize),
+              height: scaleSize(actionButtonSize),
+              backgroundColor: "#fff",
+              borderRadius: 60,
+              alignItems: "center",
+              justifyContent: "center",
+              transform: [
+                {
+                  translateX: rotationAnimatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, actionsTranslateX],
+                  }),
+                },
+                {
+                  translateY: rotationAnimatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, actionsTranslateY],
+                  }),
+                },
+                {
+                  scale: rotationAnimatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, addButtonSize / actionButtonSize],
+                  }),
+                },
+              ],
+              opacity: rotationAnimatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 0],
+              }),
+            }}
           >
             <Image
-              style={{ width: 60, height: 60 }}
+              style={{ width: scaleSize(60), height: scaleSize(60) }}
               source={require("@/assets/home/keyboard.png")}
             ></Image>
           </Animated.View>
@@ -277,97 +257,109 @@ export default function HomeScreen({ navigation }: any) {
               event.stopPropagation();
               setShowRecording(true);
             }}
-            style={[
-              {
-                width: 96,
-                height: 96,
-                backgroundColor: "#fff",
-                borderRadius: 60,
-                alignItems: "center",
-                justifyContent: "center",
-                position: "absolute",
-                left: voiceLeft,
-                bottom: voiceBottom,
-                opacity: currentValue,
-              },
-              {},
-            ]}
+            style={{
+              width: scaleSize(actionButtonSize),
+              height: scaleSize(actionButtonSize),
+              backgroundColor: "#fff",
+              borderRadius: scaleSize(actionButtonSize),
+              alignItems: "center",
+              justifyContent: "center",
+              marginLeft: scaleSize(keyboardVoiceMargin),
+              opacity: rotationAnimatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 0],
+              }),
+              transform: [
+                {
+                  translateX: rotationAnimatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -actionsTranslateX],
+                  }),
+                },
+                {
+                  translateY: rotationAnimatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, actionsTranslateY],
+                  }),
+                },
+                {
+                  scale: rotationAnimatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, addButtonSize / actionButtonSize],
+                  }),
+                },
+              ],
+            }}
           >
             <Image
-              style={{ width: 60, height: 60 }}
+              style={{ width: scaleSize(60), height: scaleSize(60) }}
               source={require("@/assets/home/voice.png")}
             ></Image>
           </Animated.View>
-
-          <Animated.View
-            onTouchStart={(event) => {
-              event.stopPropagation();
-              clickAdd();
-            }}
-            style={[
-              {
-                width: 64,
-                height: 64,
-                backgroundColor: `rgb(${255 * (1 - currentValue)}, ${
-                  255 * (1 - currentValue)
-                }, ${255 * (1 - currentValue)})`,
-                borderRadius: 40,
-                alignItems: "center",
-                justifyContent: "center",
-                position: "absolute",
-                left: width / 2 - 32,
-                bottom: 50,
-              },
-              {
-                transform: [{ rotate: rotateInterpolate }], // 应用平移
-              },
-            ]}
-          >
-            <Image
-              style={{
-                width: 32,
-                height: 32,
-                position: "absolute",
-                left: 16,
-                top: 16,
-                opacity: 1 - currentValue,
-              }}
-              source={require("@/assets/home/add.png")}
-            ></Image>
-            <Image
-              style={{
-                width: 32,
-                height: 32,
-                position: "absolute",
-                left: 16,
-                top: 16,
-                opacity: currentValue,
-              }}
-              source={require("@/assets/home/addwhite.png")}
-            ></Image>
-          </Animated.View>
         </View>
-      )}
-
-      {showInputView && (
-        <PopView>
-          <InputView
-            onClose={() => {
-              setShowInputView(false);
+        <Animated.View
+          onTouchStart={(event) => {
+            event.stopPropagation();
+            clickAdd();
+          }}
+          style={{
+            marginBottom: scaleSize(17),
+            marginTop: scaleSize(addActionsMargin),
+            width: scaleSize(addButtonSize),
+            height: scaleSize(addButtonSize),
+            backgroundColor: rotationAnimatedValue.interpolate({
+              inputRange: [0, 1],
+              outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
+            }),
+            transform: [
+              {
+                rotate: rotationAnimatedValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ["45deg", "0deg"],
+                }),
+              },
+            ],
+            borderRadius: 40,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Animated.Image
+            style={{
+              width: scaleSize(32),
+              height: scaleSize(32),
+              opacity: rotationAnimatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 1],
+              }),
+              // tintColor: rotationAnimatedValue.interpolate({
+              //   inputRange: [0, 1],
+              //   outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
+              // }),
+              // tintColor: "white",
             }}
-          ></InputView>
-        </PopView>
-      )}
-
-      {showTaskList && (
-        <PopView>
-          <TaskList
-            onClose={() => {
-              setShowTaskList(false);
+            // tintColor={"white"}
+            // tintColor={rotationAnimatedValue.interpolate({
+            //   inputRange: [0, 1],
+            //   outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
+            // })}
+            source={require("@/assets/home/add.png")}
+          ></Animated.Image>
+          <Animated.Image
+            style={{
+              position: "absolute",
+              alignSelf: "center",
+              width: scaleSize(32),
+              height: scaleSize(32),
+              opacity: rotationAnimatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 0],
+              }),
             }}
-          ></TaskList>
-        </PopView>
-      )}
+            source={require("@/assets/home/addwhite.png")}
+          ></Animated.Image>
+        </Animated.View>
+      </View>
       {showRecording && (
         <View
           style={{

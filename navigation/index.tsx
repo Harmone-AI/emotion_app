@@ -24,6 +24,9 @@ import Tasks from "@/screens/tasks";
 import TaskScreen from "@/screens/task";
 import { Image } from "expo-image";
 import { useScaleSize } from "@/hooks/useScreen";
+import { supabase } from "@/hooks/supabase";
+import * as SplashScreen from "expo-splash-screen";
+import KeyboardInputTargetScreen from "@/screens/tabs/home/KeyboardInputTarget";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -119,11 +122,31 @@ function DrawerNavigator() {
 
 export default function Navigation() {
   const { isSignedIn } = useAuth();
-  let initialRouteName: keyof RootStackParamList | undefined;
-  if (__DEV__) {
-    // initialRouteName = "tasks";
+  const [initialRouteName, setInitialRouteName] = React.useState<
+    keyof RootStackParamList | undefined
+  >();
+  const initBySession = React.useCallback(async () => {
+    try {
+      const session = await supabase.auth.getSession();
+      if (session.data.session?.user) {
+        setInitialRouteName("Home");
+      } else {
+        setInitialRouteName("SignIn");
+      }
+      setTimeout(() => {
+        SplashScreen.hideAsync();
+      }, 200);
+    } catch (error) {
+      console.log("initBySession", error);
+      setInitialRouteName("SignIn");
+    }
+  }, []);
+  React.useEffect(() => {
+    initBySession();
+  }, []);
+  if (initialRouteName === undefined) {
+    return null;
   }
-  const scaleSize = useScaleSize();
   return (
     <NavigationContainer>
       <PostHogProvider
@@ -157,7 +180,9 @@ export default function Navigation() {
         }}
         style={{ flex: 1 }}
       >
-        <Stack.Navigator initialRouteName={initialRouteName}>
+        <Stack.Navigator
+          initialRouteName={__DEV__ ? initialRouteName : initialRouteName}
+        >
           {/* {!isSignedIn ? (
           <>
             <Stack.Screen name='SignIn' component={SignInScreen} />
@@ -169,11 +194,22 @@ export default function Navigation() {
               <Stack.Screen name="SignIn" component={SignInScreen} />
               <Stack.Screen name="SignUp" component={SignUpScreen} />
               <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="task" component={TaskScreen} />
+              <Stack.Screen
+                name="task"
+                component={TaskScreen}
+                options={{
+                  animation: "slide_from_bottom",
+                }}
+              />
+              <Stack.Screen
+                name="keyboard-input-target"
+                component={KeyboardInputTargetScreen}
+                options={{
+                  presentation: "containedTransparentModal",
+                }}
+              />
             </Stack.Group>
             <Stack.Group screenOptions={{ headerShown: true }}>
-              <Stack.Screen name="DrawerRoot" component={DrawerNavigator} />
-
               <Stack.Screen
                 name="AddGoal"
                 component={AddGoalScreen}
