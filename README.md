@@ -4,6 +4,10 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## Get started
 
+yarn install
+删除ios目录
+yarn ios
+
 1. Install dependencies
 
    ```bash
