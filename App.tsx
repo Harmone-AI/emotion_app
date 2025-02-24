@@ -9,7 +9,6 @@ import { useAppState, useNetworkState } from "./libs/query-helpers";
 import Navigation from "./navigation";
 import "./style.css";
 
-import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
 import { PostHogProvider } from "posthog-react-native";
 import * as SplashScreen from "expo-splash-screen";
 import {
@@ -55,14 +54,7 @@ export default function App() {
             }}
           > */}
           <BottomSheetModalProvider>
-            <ClerkProvider
-              publishableKey={publishableKey}
-              tokenCache={tokenCache}
-            >
-              <ClerkLoaded>
-                <Navigation />
-              </ClerkLoaded>
-            </ClerkProvider>
+            <Navigation />
           </BottomSheetModalProvider>
           {/* </SafeAreaProvider> */}
         </PortalProvider>

@@ -13,8 +13,11 @@
       "bundleIdentifier": "com.harmone.harmoneai",
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone."
-      }
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "usesAppleSignIn": true,
+      "appleTeamId": "6D963DM8MR"
     },
     "android": {
       "adaptiveIcon": {
@@ -47,7 +50,14 @@
         }
       ],
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.688317210747-e06gkeig3fjbasqbdhmmo9lblc4an75i"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Portal } from "@gorhom/portal";
 import { StackActions, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   Keyboard,
   SafeAreaView,
@@ -21,11 +21,12 @@ import {
 } from "react-native";
 import * as api from "@/api/api";
 import CreateView from "../../task/createView";
-import Loading from "@/components/Loading";
 import { useScaleSize } from "@/hooks/useScreen";
 import AppButton from "@/components/AppButton";
 import Page from "@/components/Page";
 import StorageHelper from "@/hooks/storage";
+import { useQuestStore } from "@/hooks/zustand/quest";
+import AppLoading from "@/components/Loading";
 const animalImage = require("@/assets/animal.png");
 
 export default function KeyboardInputTargetScreen() {
@@ -41,25 +42,15 @@ export default function KeyboardInputTargetScreen() {
   const close = () => {
     navigation.goBack();
   };
+  const post = useQuestStore((state) => state.post);
   const done = async () => {
-    setShowLoading(true);
-    let res = await api.word2tasklist({
-      user_input: userInput,
-      user_id: 1,
-    });
-    const tasks: api.Task[] = [];
-    await Promise.all(
-      res.taskids.split(",").map(async (item) => {
-        const id = Number(item);
-        const json = await api.task(id);
-        tasks[id] = json;
-        return json;
-      })
-    );
-    console.log("res===", tasks);
-    StorageHelper.tasks = tasks;
-    StorageHelper.latestTarget = res;
-    navigation.dispatch(StackActions.replace("task"));
+    try {
+      setShowLoading(true);
+      await post(userInput);
+      navigation.dispatch(StackActions.replace("task"));
+    } catch (e) {
+      setShowLoading(false);
+    }
   };
 
   return (
@@ -150,7 +141,19 @@ export default function KeyboardInputTargetScreen() {
         }}
       >
         {showLoading ? (
-          <Loading></Loading>
+          <View
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <AppLoading color="white" />
+          </View>
         ) : (
           <Text style={{ color: "#fff" }}>DONE</Text>
         )}

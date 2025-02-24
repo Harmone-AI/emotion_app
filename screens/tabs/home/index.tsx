@@ -28,6 +28,7 @@ import RecordingView from "@/components/RecordingView";
 import AppButton from "@/components/AppButton";
 import { useScaleSize } from "@/hooks/useScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AppLoading from "@/components/Loading";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
@@ -116,7 +117,6 @@ export default function HomeScreen({ navigation }: any) {
   const actionsTranslateX = scaleSize(
     actionButtonSize / 2 + addButtonSize / 2 + addButtonActionsMargin
   );
-  console.log("actionsTranslateX", actionsTranslateX);
   return (
     <SafeAreaView
       onTouchStart={() => {
@@ -195,6 +195,7 @@ export default function HomeScreen({ navigation }: any) {
         <Image style={{ width: 273, height: 371 }} source={animalImage}></Image>
       </View>
       <View style={{ flex: 1 }}></View>
+      {/* <AppLoading width={40} height={40} /> */}
       <View
         style={{
           justifyContent: "center",

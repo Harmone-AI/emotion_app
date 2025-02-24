@@ -12,7 +12,7 @@ async function http<T>(url: string, params: any, method?: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-export type TaskTarget = {
+export type Quest = {
   id: number;
   user_id: number;
   taskids: string;
@@ -27,6 +27,9 @@ export type TaskTarget = {
   mood_reason: string;
   begin_img: string;
   end_img: string;
+
+  // local
+  confirmed: boolean;
 };
 
 export type Task = {
@@ -38,7 +41,7 @@ export type Task = {
   created_at: string;
 };
 
-export async function word2tasklist(params): Promise<TaskTarget> {
+export async function word2tasklist(params): Promise<Quest> {
   if (__DEV__) {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     return {
@@ -60,7 +63,7 @@ export async function word2tasklist(params): Promise<TaskTarget> {
       end_img: "https://harmone.ai/story_images/story_images/1.jpg",
     };
   }
-  let res = await http<TaskTarget>("/word2tasklist/", params);
+  let res = await http<Quest>("/word2tasklist/", params);
   return res;
 }
 

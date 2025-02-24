@@ -1,5 +1,3 @@
-import { useAuth, useUser } from "@clerk/clerk-expo";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   DrawerContentComponentProps,
   DrawerContentScrollView,
@@ -11,7 +9,6 @@ import * as React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import SignInScreen from "../screens/auth/SignInScreen";
-import SignUpScreen from "../screens/auth/SignUpScreen";
 import StoryDetailScreen from "../screens/story";
 import StoryListScreen from "../screens/stories";
 import AddGoalScreen from "../screens/tabs/AddGoalScreen";
@@ -31,97 +28,7 @@ import KeyboardInputTargetScreen from "@/screens/tabs/home/KeyboardInputTarget";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
-function CustomDrawerContent(props: DrawerContentComponentProps) {
-  const { navigation } = props;
-  const { user } = useUser();
-  const { signOut } = useAuth();
-
-  const navigateToScreen = (screenName: keyof DrawerParamList) => {
-    navigation.navigate(screenName);
-  };
-
-  return (
-    <View className="flex-1 bg-white">
-      <DrawerContentScrollView {...props}>
-        {/* 用户信息区域 */}
-        <View className="px-6 py-8">
-          <View className="items-center">
-            {user?.imageUrl ? (
-              <Image
-                source={{ uri: user.imageUrl }}
-                className="w-20 h-20 rounded-full mb-3"
-              />
-            ) : (
-              <View className="w-20 h-20 rounded-full bg-purple-100 items-center justify-center mb-3">
-                <MaterialCommunityIcons
-                  name="account"
-                  size={36}
-                  color="#9333ea"
-                />
-              </View>
-            )}
-            <Text className="text-lg font-semibold text-gray-800 mb-1">
-              {user?.username || "用户"}
-            </Text>
-            <Text className="text-sm text-gray-500">
-              {user?.primaryEmailAddress?.emailAddress}
-            </Text>
-          </View>
-        </View>
-
-        {/* Menu Items */}
-        <View className="px-2 mt-4">
-          <TouchableOpacity
-            className="flex-row items-center px-2 py-3 rounded-lg"
-            onPress={() => navigateToScreen("Home")}
-          >
-            <MaterialCommunityIcons name="home" size={24} color="#666" />
-            <Text className="ml-3 text-gray-700 text-base">首页</Text>
-          </TouchableOpacity>
-        </View>
-      </DrawerContentScrollView>
-
-      {/* 登出按钮 */}
-      <View className="px-4">
-        <TouchableOpacity
-          className="mt-2 mb-6 flex-row items-center px-4 py-3 w-full rounded-full bg-red-500 justify-center"
-          onPress={() => signOut()}
-        >
-          <MaterialCommunityIcons name="logout" size={18} color="#fff" />
-          <Text className="ml-3 text-white font-medium">退出登录</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
-function DrawerNavigator() {
-  return (
-    <Drawer.Navigator
-      screenOptions={{
-        headerShown: true,
-        drawerStyle: {
-          width: "75%",
-        },
-      }}
-      drawerContent={(props) => <CustomDrawerContent {...props} />}
-    >
-      <Drawer.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" size={size} color={color} />
-          ),
-          title: "首页",
-        }}
-      />
-    </Drawer.Navigator>
-  );
-}
-
 export default function Navigation() {
-  const { isSignedIn } = useAuth();
   const [initialRouteName, setInitialRouteName] = React.useState<
     keyof RootStackParamList | undefined
   >();
@@ -149,7 +56,7 @@ export default function Navigation() {
   }
   return (
     <NavigationContainer>
-      <PostHogProvider
+      {/* <PostHogProvider
         apiKey="phc_oRAcPnb1Mt5vy38HacooO5Mq6qmtBxfa6D0DjYnevFM"
         options={{
           host: "https://us.i.posthog.com",
@@ -179,71 +86,70 @@ export default function Navigation() {
           },
         }}
         style={{ flex: 1 }}
+      > */}
+      <Stack.Navigator
+        initialRouteName={__DEV__ ? initialRouteName : initialRouteName}
       >
-        <Stack.Navigator
-          initialRouteName={__DEV__ ? initialRouteName : initialRouteName}
-        >
-          {/* {!isSignedIn ? (
+        {/* {!isSignedIn ? (
           <>
             <Stack.Screen name='SignIn' component={SignInScreen} />
             <Stack.Screen name='SignUp' component={SignUpScreen} />
           </>
         ) : ( */}
-          <>
-            <Stack.Group screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="SignIn" component={SignInScreen} />
-              <Stack.Screen name="SignUp" component={SignUpScreen} />
-              <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen
-                name="task"
-                component={TaskScreen}
-                options={{
-                  animation: "slide_from_bottom",
-                }}
-              />
-              <Stack.Screen
-                name="keyboard-input-target"
-                component={KeyboardInputTargetScreen}
-                options={{
-                  presentation: "containedTransparentModal",
-                }}
-              />
-            </Stack.Group>
-            <Stack.Group screenOptions={{ headerShown: true }}>
-              <Stack.Screen
-                name="AddGoal"
-                component={AddGoalScreen}
-                options={{ headerShown: false, presentation: "modal" }}
-              />
-              <Stack.Screen name="TaskList" component={TaskListScreen} />
-              <Stack.Screen
-                name="tasks"
-                component={Tasks}
-                options={{ title: "Task List" }}
-              />
-              <Stack.Screen
-                name="TaskCompletion"
-                component={TaskCompletionScreen}
-              />
-              <Stack.Screen
-                name="stories"
-                component={StoryListScreen}
-                options={{ title: "Story List" }}
-              />
-              <Stack.Screen
-                name="story"
-                component={StoryDetailScreen}
-                options={{
-                  presentation: "formSheet",
-                  title: "",
-                  headerShadowVisible: false,
-                }}
-              />
-            </Stack.Group>
-          </>
-          {/* )} */}
-        </Stack.Navigator>
-      </PostHogProvider>
+        <>
+          <Stack.Group screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="SignIn" component={SignInScreen} />
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen
+              name="task"
+              component={TaskScreen}
+              options={{
+                animation: "slide_from_bottom",
+              }}
+            />
+            <Stack.Screen
+              name="keyboard-input-target"
+              component={KeyboardInputTargetScreen}
+              options={{
+                presentation: "containedTransparentModal",
+              }}
+            />
+          </Stack.Group>
+          <Stack.Group screenOptions={{ headerShown: true }}>
+            <Stack.Screen
+              name="AddGoal"
+              component={AddGoalScreen}
+              options={{ headerShown: false, presentation: "modal" }}
+            />
+            <Stack.Screen name="TaskList" component={TaskListScreen} />
+            <Stack.Screen
+              name="tasks"
+              component={Tasks}
+              options={{ title: "Task List" }}
+            />
+            <Stack.Screen
+              name="TaskCompletion"
+              component={TaskCompletionScreen}
+            />
+            <Stack.Screen
+              name="stories"
+              component={StoryListScreen}
+              options={{ title: "Story List" }}
+            />
+            <Stack.Screen
+              name="story"
+              component={StoryDetailScreen}
+              options={{
+                presentation: "formSheet",
+                title: "",
+                headerShadowVisible: false,
+              }}
+            />
+          </Stack.Group>
+        </>
+        {/* )} */}
+      </Stack.Navigator>
+      {/* </PostHogProvider> */}
     </NavigationContainer>
   );
 }

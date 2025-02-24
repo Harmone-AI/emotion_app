@@ -14,7 +14,7 @@ export default React.memo(
   React.forwardRef(
     (
       props: ScrollViewProps & { children?: React.ReactNode } & {
-        safeAreaProps: SafeAreaViewProps;
+        safeAreaProps?: SafeAreaViewProps;
       },
       ref: ForwardedRef<ScrollView>
     ) => {

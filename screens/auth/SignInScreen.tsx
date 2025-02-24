@@ -1,4 +1,3 @@
-import { useSignIn } from "@clerk/clerk-expo";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -25,15 +24,12 @@ import {
   statusCodes,
 } from "@react-native-google-signin/google-signin";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { RootStackParamList } from "@/types/navigation";
 
 const logoImage = require("@/assets/login/logo.png");
-type AuthStackParamList = {
-  SignIn: undefined;
-  SignUp: undefined;
-};
 
 type SignInScreenNavigationProp = NativeStackNavigationProp<
-  AuthStackParamList,
+  RootStackParamList,
   "SignIn"
 >;
 

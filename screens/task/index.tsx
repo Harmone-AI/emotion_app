@@ -2,7 +2,7 @@ import { HBase } from "@/components/HBase";
 import Page from "@/components/Page";
 import { useScaleSize } from "@/hooks/useScreen";
 import { Image } from "expo-image";
-import { ScrollView, View } from "react-native";
+import { ScrollView, TextInput, View } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -11,26 +11,35 @@ import { useState } from "react";
 import React from "react";
 import AppButton from "@/components/AppButton";
 import { useNavigation } from "@react-navigation/native";
-import { TaskTarget } from "@/api/api";
+import { Quest } from "@/api/api";
 import StorageHelper from "@/hooks/storage";
+import Swipeable, {
+  SwipeableMethods,
+} from "react-native-gesture-handler/ReanimatedSwipeable";
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import RightAction from "./RightActions";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SharedValue } from "react-native-reanimated";
+import TaskItem from "./TaskItem";
+import { useQuestStore } from "@/hooks/zustand/quest";
 
 export default function TaskScreen() {
   const scaleSize = useScaleSize();
   const navigation = useNavigation();
-  const [taskTarget, setTaskTarget] = useState<TaskTarget | null>(
-    StorageHelper.latestTarget
-  );
-  const taskIds = taskTarget?.taskids.split(",");
+  const quest = useQuestStore((state) => state.questMap.latest);
+  const confirm = useQuestStore((state) => state.confirm);
+  const taskIds = quest?.taskids.split(",");
+  const tasks = useQuestStore((state) => state.taskMap);
   const finishedCount =
-    taskIds?.filter((id) => StorageHelper.tasks?.[Number(id)]?.status === 1)
-      .length || 0;
-  const percent = finishedCount / (taskTarget?.taskids.split(",").length || 0);
+    taskIds?.filter((id) => tasks?.[Number(id)]?.status === 1).length || 0;
+  const percent = finishedCount / (quest?.taskids.split(",").length || 0);
   const insets = useSafeAreaInsets();
+
   return (
     <Page
       style={{
         backgroundColor: "#e6eff4",
-        paddingBottom: scaleSize(insets.bottom || 20),
+        paddingBottom: scaleSize(insets.bottom ? 0 : 20),
       }}
       safeAreaProps={{
         style: {
@@ -89,7 +98,7 @@ export default function TaskScreen() {
             marginTop: scaleSize(12),
           }}
         >
-          {taskTarget?.quest_title}
+          {quest?.quest_title}
         </HBase>
         <HBase
           style={{
@@ -100,7 +109,7 @@ export default function TaskScreen() {
             textAlign: "center",
           }}
         >
-          {taskTarget?.user_title}
+          {quest?.user_title}
         </HBase>
 
         <View
@@ -146,7 +155,7 @@ export default function TaskScreen() {
                 color: "#f29762",
               }}
             >
-              {finishedCount}/{taskTarget?.taskids.split(",").length || ""}
+              {finishedCount}/{quest?.taskids.split(",").length || ""}
             </HBase>
           </View>
           <View
@@ -168,62 +177,34 @@ export default function TaskScreen() {
             />
           </View>
         </View>
-        <View style={{ flex: 1, marginTop: scaleSize(40) }}>
+        <GestureHandlerRootView style={{ flex: 1, marginTop: scaleSize(40) }}>
           {taskIds?.map((id, index) => {
-            const task = StorageHelper.tasks?.[Number(id)];
-            return (
-              <View
-                key={id}
-                style={{
-                  alignSelf: "center",
-                  shadowColor: "#e5e5e5",
-                  shadowOffset: {
-                    width: 0,
-                    height: 3,
-                  },
-                  shadowRadius: 0,
-                  elevation: 0,
-                  shadowOpacity: 1,
-                  borderRadius: 12,
-                  backgroundColor: "#fff",
-                  borderColor: "#e5e5e5",
-                  borderWidth: scaleSize(1),
-                  width: scaleSize(338),
-                  height: scaleSize(56),
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: scaleSize(8),
-                  paddingLeft: scaleSize(12),
-                  paddingRight: scaleSize(12),
-                }}
-              >
-                <HBase
-                  style={{
-                    fontSize: scaleSize(14),
-                    lineHeight: 20,
-                    textTransform: "capitalize",
-                    fontWeight: "700",
-                    fontFamily: "SF Pro Rounded",
-                    color: "#333",
-                    textAlign: "left",
-                    flex: 1,
-                  }}
-                >
-                  {task?.content}
-                </HBase>
-                <View
-                  style={{
-                    borderColor: "#e0e0e0",
-                    borderRadius: scaleSize(32),
-                    borderWidth: scaleSize(2),
-                    width: scaleSize(32),
-                    height: scaleSize(32),
-                  }}
-                />
-              </View>
-            );
+            const task = tasks?.[Number(id)];
+            if (task.status !== 0) {
+              return null;
+            }
+            return <TaskItem key={id} id={Number(id)} task={task!} />;
           })}
-        </View>
+        </GestureHandlerRootView>
+        {taskIds.find((id) => tasks?.[Number(id)].status !== 0) && (
+          <HBase
+            style={{
+              fontSize: scaleSize(12),
+              fontWeight: "800",
+              color: "rgba(0, 0, 0, 0.25)",
+              textAlign: "left",
+            }}
+          >
+            Completed 10 goals
+          </HBase>
+        )}
+        {taskIds?.map((id, index) => {
+          const task = tasks?.[Number(id)];
+          if (task.status === 0) {
+            return null;
+          }
+          return <TaskItem key={id} id={Number(id)} task={task!} />;
+        })}
       </ScrollView>
       <AppButton
         style={{
@@ -256,69 +237,112 @@ export default function TaskScreen() {
           marginBottom: scaleSize(16),
         }}
       >
-        <AppButton
-          style={{
-            shadowColor: "#b49300",
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowRadius: 0,
-            elevation: 0,
-            shadowOpacity: 1,
-            borderRadius: 12,
-            backgroundColor: "#ffd000",
-            width: scaleSize(165),
-            height: scaleSize(40),
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <HBase
+        {quest.confirmed ? (
+          <AppButton
+            onPress={() => {}}
             style={{
-              fontSize: scaleSize(15),
-              textTransform: "uppercase",
-              fontWeight: "700",
-              fontFamily: "SF Pro Rounded",
-              color: "#53270d",
-              textAlign: "left",
+              shadowColor: "#cf620c",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowRadius: 0,
+              elevation: 0,
+              shadowOpacity: 1,
+              borderRadius: 8,
+              backgroundColor: "#ff7c14",
+              width: scaleSize(338),
+              height: scaleSize(40),
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            Regenerate
-          </HBase>
-        </AppButton>
-        <AppButton
-          style={{
-            marginLeft: scaleSize(8),
-            shadowColor: "#b49300",
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowRadius: 0,
-            elevation: 0,
-            shadowOpacity: 1,
-            borderRadius: 12,
-            backgroundColor: "#FF7C14",
-            width: scaleSize(165),
-            height: scaleSize(40),
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <HBase
-            style={{
-              fontSize: scaleSize(15),
-              textTransform: "uppercase",
-              fontWeight: "700",
-              fontFamily: "SF Pro Rounded",
-              color: "#fff",
-              textAlign: "left",
-            }}
-          >
-            confirm
-          </HBase>
-        </AppButton>
+            <HBase
+              style={{
+                fontSize: scaleSize(15),
+                lineHeight: scaleSize(15),
+                textTransform: "uppercase",
+                fontWeight: "700",
+                color: "#fff",
+                textAlign: "left",
+                textAlignVertical: "center",
+                alignSelf: "center",
+                marginTop: scaleSize(4),
+              }}
+            >
+              + Add goal
+            </HBase>
+          </AppButton>
+        ) : (
+          <>
+            <AppButton
+              style={{
+                shadowColor: "#b49300",
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowRadius: 0,
+                elevation: 0,
+                shadowOpacity: 1,
+                borderRadius: 12,
+                backgroundColor: "#ffd000",
+                width: scaleSize(165),
+                height: scaleSize(40),
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <HBase
+                style={{
+                  fontSize: scaleSize(15),
+                  textTransform: "uppercase",
+                  fontWeight: "700",
+                  fontFamily: "SF Pro Rounded",
+                  color: "#53270d",
+                  textAlign: "left",
+                }}
+              >
+                Regenerate
+              </HBase>
+            </AppButton>
+            <AppButton
+              style={{
+                marginLeft: scaleSize(8),
+                shadowColor: "#b49300",
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowRadius: 0,
+                elevation: 0,
+                shadowOpacity: 1,
+                borderRadius: 12,
+                backgroundColor: "#FF7C14",
+                width: scaleSize(165),
+                height: scaleSize(40),
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => {
+                confirm(quest.id);
+              }}
+            >
+              <HBase
+                style={{
+                  fontSize: scaleSize(15),
+                  textTransform: "uppercase",
+                  fontWeight: "700",
+                  fontFamily: "SF Pro Rounded",
+                  color: "#fff",
+                  textAlign: "left",
+                }}
+              >
+                confirm
+              </HBase>
+            </AppButton>
+          </>
+        )}
       </View>
     </Page>
   );
