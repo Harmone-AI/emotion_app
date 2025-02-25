@@ -42,33 +42,12 @@ export type Task = {
 };
 
 export async function word2tasklist(params): Promise<Quest> {
-  if (__DEV__) {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    return {
-      id: 63,
-      user_id: 1,
-      taskids: "167,168,169",
-      status: 0,
-      created_at: "2025-02-23T09:28:51.516528",
-      quest_title: "Positive Vibes",
-      user_title: "Joyful Spirit",
-      start_message:
-        "Hey there! Ready to spread some positivity and embrace the good vibes today? Let's do this!",
-      end_message:
-        "You did it! Your joyful spirit is contagious. Keep shining bright like a beacon of happiness!",
-      user_input: "hello",
-      mood: "",
-      mood_reason: "",
-      begin_img: "https://harmone.ai/story_images/story_images/1.jpg",
-      end_img: "https://harmone.ai/story_images/story_images/1.jpg",
-    };
-  }
   let res = await http<Quest>("/word2tasklist/", params);
   return res;
 }
 
-export async function add_task(params) {
-  let res = await http("/add_task/", params);
+export async function add_task(params: { content: string; list_id: number }) {
+  let res = await http<Task>("/add_task/", { ...params, user_id: 1 });
   return res;
 }
 export async function current_tasklist(userid) {

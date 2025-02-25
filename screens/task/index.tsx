@@ -26,7 +26,8 @@ import { useQuestStore } from "@/hooks/zustand/quest";
 export default function TaskScreen() {
   const scaleSize = useScaleSize();
   const navigation = useNavigation();
-  const quest = useQuestStore((state) => state.questMap.latest);
+  const quest = useQuestStore((state) => state.questMap[state.latestQuestId]);
+  const addTask = useQuestStore((state) => state.addTask);
   const confirm = useQuestStore((state) => state.confirm);
   const taskIds = quest?.taskids.split(",");
   const tasks = useQuestStore((state) => state.taskMap);
@@ -35,6 +36,14 @@ export default function TaskScreen() {
   const percent = finishedCount / (quest?.taskids.split(",").length || 0);
   const insets = useSafeAreaInsets();
 
+  const finishTaskIds = quest?.taskids.split(",").filter((id) => {
+    return tasks?.[Number(id)]?.status === 1;
+  });
+  const unFinishTaskIds = quest?.taskids.split(",").filter((id) => {
+    return tasks?.[Number(id)]?.status === 0;
+  });
+  const [folderFinishedTasks, setFolderFinishedTasks] =
+    useState<boolean>(false);
   return (
     <Page
       style={{
@@ -178,7 +187,7 @@ export default function TaskScreen() {
           </View>
         </View>
         <GestureHandlerRootView style={{ flex: 1, marginTop: scaleSize(40) }}>
-          {taskIds?.map((id, index) => {
+          {unFinishTaskIds?.map((id, index) => {
             const task = tasks?.[Number(id)];
             if (task.status !== 0) {
               return null;
@@ -186,25 +195,49 @@ export default function TaskScreen() {
             return <TaskItem key={id} id={Number(id)} task={task!} />;
           })}
         </GestureHandlerRootView>
-        {taskIds.find((id) => tasks?.[Number(id)].status !== 0) && (
-          <HBase
+        {finishTaskIds.length > 0 && (
+          <AppButton
+            onPress={() => {
+              setFolderFinishedTasks((s) => !s);
+            }}
             style={{
-              fontSize: scaleSize(12),
-              fontWeight: "800",
-              color: "rgba(0, 0, 0, 0.25)",
-              textAlign: "left",
+              flexDirection: "row",
+              marginTop: scaleSize(24),
+              marginBottom: scaleSize(16),
+              alignItems: "center",
+              alignSelf: "center",
             }}
           >
-            Completed 10 goals
-          </HBase>
+            <HBase
+              style={{
+                fontSize: scaleSize(12),
+                fontWeight: "800",
+                color: "rgba(0, 0, 0, 0.25)",
+                textAlign: "left",
+              }}
+            >
+              {folderFinishedTasks
+                ? `Completed ${finishTaskIds.length} goals`
+                : "Fold up completed goals"}
+            </HBase>
+            <Image
+              source={require("./arrow.svg")}
+              style={{
+                width: scaleSize(7),
+                height: scaleSize(4),
+                marginLeft: scaleSize(6),
+                transform: [
+                  { rotate: folderFinishedTasks ? "0deg" : "180deg" },
+                ],
+              }}
+            />
+          </AppButton>
         )}
-        {taskIds?.map((id, index) => {
-          const task = tasks?.[Number(id)];
-          if (task.status === 0) {
-            return null;
-          }
-          return <TaskItem key={id} id={Number(id)} task={task!} />;
-        })}
+        {!folderFinishedTasks &&
+          finishTaskIds?.map((id, index) => {
+            const task = tasks?.[Number(id)];
+            return <TaskItem key={id} id={Number(id)} task={task!} />;
+          })}
       </ScrollView>
       <AppButton
         style={{
@@ -239,7 +272,9 @@ export default function TaskScreen() {
       >
         {quest.confirmed ? (
           <AppButton
-            onPress={() => {}}
+            onPress={() => {
+              addTask(quest.id, "");
+            }}
             style={{
               shadowColor: "#cf620c",
               shadowOffset: {

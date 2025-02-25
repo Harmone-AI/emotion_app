@@ -29,6 +29,10 @@ import AppButton from "@/components/AppButton";
 import { useScaleSize } from "@/hooks/useScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AppLoading from "@/components/Loading";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useQuestStore } from "@/hooks/zustand/quest";
+import { HBase } from "@/components/HBase";
+import React from "react";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
@@ -37,30 +41,25 @@ export default function HomeScreen({ navigation }: any) {
     useNativeDriver: true,
   });
 
-  const [recording, setRecording] = useState(false);
+  const [recording, setRecording] = useState(0);
   const [showRecording, setShowRecording] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
 
   const [recognizing, setRecognizing] = useState(false);
-  const [transcript, setTranscript] = useState("");
-
-  const [cancel, setCancel] = useState(false);
 
   useSpeechRecognitionEvent("start", () => setRecognizing(true));
   useSpeechRecognitionEvent("end", () => setRecognizing(false));
   useSpeechRecognitionEvent("result", (event) => {
-    if (!cancel) {
+    if (event.isFinal) {
       console.log("result====", event.results[0].transcript);
-      setTranscript(event.results[0]?.transcript);
-      done();
+      done(event.results[0]?.transcript);
     }
   });
   useSpeechRecognitionEvent("error", (event) => {
-    if (!cancel) {
-      Alert.alert(event.message);
+    if (recording !== 2) {
       console.log("error code:", event.error, "error message:", event.message);
-      setRecording(false);
     }
+    setRecording(0);
   });
 
   const handleStart = async () => {
@@ -81,14 +80,14 @@ export default function HomeScreen({ navigation }: any) {
     });
   };
 
-  const done = async () => {
-    setShowLoading(true);
-    let res = await api.word2tasklist({
-      user_input: transcript,
-      user_id: 1,
-    });
+  const post = useQuestStore((state) => state.post);
 
+  const done = async (transcript: string) => {
+    setRecording(0);
+    setShowLoading(true);
+    let res = await post(transcript);
     setShowLoading(false);
+    navigation.navigate("task");
   };
 
   const clickAdd = () => {
@@ -110,6 +109,7 @@ export default function HomeScreen({ navigation }: any) {
   const addActionsMargin = 7;
   const actionButtonSize = 96;
   const addButtonSize = 64;
+  const loadingSize = 80;
   const addButtonActionsMargin = -8;
   const actionsTranslateY = scaleSize(
     actionButtonSize / 2 + addActionsMargin + addButtonSize / 2
@@ -117,11 +117,12 @@ export default function HomeScreen({ navigation }: any) {
   const actionsTranslateX = scaleSize(
     actionButtonSize / 2 + addButtonSize / 2 + addButtonActionsMargin
   );
+  const tapStartLocation = React.useRef({ x: 0, y: 0 });
   return (
     <SafeAreaView
-      onTouchStart={() => {
+      onTouchStart={(event) => {
         if (showRecording) {
-          setRecording(false);
+          setRecording(0);
           setShowRecording(false);
           rotationAnimatedValue.setValue(0);
           clickAdd();
@@ -257,6 +258,7 @@ export default function HomeScreen({ navigation }: any) {
             onTouchStart={(event) => {
               event.stopPropagation();
               setShowRecording(true);
+              clickAdd();
             }}
             style={{
               width: scaleSize(actionButtonSize),
@@ -298,146 +300,193 @@ export default function HomeScreen({ navigation }: any) {
             ></Image>
           </Animated.View>
         </View>
-        <Animated.View
-          onTouchStart={(event) => {
-            event.stopPropagation();
-            clickAdd();
-          }}
+        <View
           style={{
-            marginBottom: scaleSize(17),
             marginTop: scaleSize(addActionsMargin),
             width: scaleSize(addButtonSize),
             height: scaleSize(addButtonSize),
-            backgroundColor: rotationAnimatedValue.interpolate({
-              inputRange: [0, 1],
-              outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
-            }),
-            transform: [
-              {
-                rotate: rotationAnimatedValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ["45deg", "0deg"],
-                }),
-              },
-            ],
-            borderRadius: 40,
-            alignItems: "center",
-            justifyContent: "center",
+            marginBottom: scaleSize(17),
           }}
         >
-          <Animated.Image
+          <Animated.View
+            onTouchStart={(event) => {
+              event.stopPropagation();
+              clickAdd();
+            }}
             style={{
-              width: scaleSize(32),
-              height: scaleSize(32),
-              opacity: rotationAnimatedValue.interpolate({
+              marginBottom: scaleSize(17),
+              width: scaleSize(addButtonSize),
+              height: scaleSize(addButtonSize),
+              backgroundColor: rotationAnimatedValue.interpolate({
                 inputRange: [0, 1],
-                outputRange: [0, 1],
+                outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
               }),
-              // tintColor: rotationAnimatedValue.interpolate({
+              transform: [
+                {
+                  rotate: rotationAnimatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ["45deg", "0deg"],
+                  }),
+                },
+              ],
+              borderRadius: 40,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Animated.Image
+              style={{
+                width: scaleSize(32),
+                height: scaleSize(32),
+                opacity: rotationAnimatedValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 1],
+                }),
+                // tintColor: rotationAnimatedValue.interpolate({
+                //   inputRange: [0, 1],
+                //   outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
+                // }),
+                // tintColor: "white",
+              }}
+              // tintColor={"white"}
+              // tintColor={rotationAnimatedValue.interpolate({
               //   inputRange: [0, 1],
               //   outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
-              // }),
-              // tintColor: "white",
-            }}
-            // tintColor={"white"}
-            // tintColor={rotationAnimatedValue.interpolate({
-            //   inputRange: [0, 1],
-            //   outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
-            // })}
-            source={require("@/assets/home/add.png")}
-          ></Animated.Image>
-          <Animated.Image
-            style={{
-              position: "absolute",
-              alignSelf: "center",
-              width: scaleSize(32),
-              height: scaleSize(32),
-              opacity: rotationAnimatedValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0],
-              }),
-            }}
-            source={require("@/assets/home/addwhite.png")}
-          ></Animated.Image>
-        </Animated.View>
-      </View>
-      {showRecording && (
-        <View
-          style={{
-            position: "absolute",
-            left: 0,
-            bottom: 50,
-            right: 0,
-            alignItems: "center",
-          }}
-        >
-          {recording && (
-            <View style={{ alignItems: "center" }}>
-              <RecordingView></RecordingView>
-
-              <Image
-                style={{ width: 11, height: 6, marginTop: 20 }}
-                source={require("@/assets/home/arrowup.png")}
-              ></Image>
-              <Text>Swipe up to cancel</Text>
-            </View>
-          )}
-
-          {showLoading ? (
-            <View
+              // })}
+              source={require("@/assets/home/add.png")}
+            ></Animated.Image>
+            <Animated.Image
               style={{
-                width: 60,
-                height: 60,
-                backgroundColor: "#fff",
-                borderRadius: 40,
-                alignItems: "center",
+                position: "absolute",
+                alignSelf: "center",
+                width: scaleSize(32),
+                height: scaleSize(32),
+                opacity: rotationAnimatedValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 0],
+                }),
+              }}
+              source={require("@/assets/home/addwhite.png")}
+            ></Animated.Image>
+          </Animated.View>
+          {showRecording && (
+            <GestureHandlerRootView
+              style={{
+                position: "absolute",
+                left: 0,
+                bottom: 0,
+                right: 0,
                 justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              {" "}
-              <Loading></Loading>{" "}
-            </View>
-          ) : (
-            <Animated.View
-              onTouchStart={(event) => {
-                event.stopPropagation();
-                setRecording(true);
-                handleStart();
-                setCancel(false);
-              }}
-              onTouchMove={() => {
-                setRecording(false);
-                setCancel(true);
-                ExpoSpeechRecognitionModule.stop();
-              }}
-              onTouchEnd={() => {
-                ExpoSpeechRecognitionModule.stop();
-              }}
-              style={[
-                {
-                  width: 64,
-                  height: 64,
-                  backgroundColor: recording ? "#FF7C14" : "#fff",
-                  borderRadius: 60,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginTop: 30,
-                },
-                {},
-              ]}
-            >
-              <Image
-                style={{ width: 40, height: 40 }}
-                source={
-                  recording
-                    ? require("@/assets/home/voicewhite.png")
-                    : require("@/assets/home/voice.png")
-                }
-              ></Image>
-            </Animated.View>
+              {recording !== 0 && (
+                <View
+                  style={{
+                    alignItems: "center",
+                    width: scaleSize(300),
+                    marginBottom: scaleSize(30),
+                  }}
+                >
+                  <RecordingView></RecordingView>
+
+                  <Image
+                    style={{ width: 11, height: 6, marginTop: scaleSize(30) }}
+                    source={require("@/assets/home/arrowup.png")}
+                  ></Image>
+                  <HBase
+                    style={{
+                      color: "#86A2B2",
+                      textAlign: "center",
+                      fontSize: 12,
+                      fontStyle: "normal",
+                      fontWeight: "600",
+                      textTransform: "capitalize",
+                      marginTop: scaleSize(7),
+                    }}
+                  >
+                    {recording === 1
+                      ? "Swipe up to cancel"
+                      : recording === 2
+                      ? "Release to cancel"
+                      : "Hold to record"}
+                  </HBase>
+                </View>
+              )}
+
+              {showLoading ? (
+                <View
+                  style={{
+                    width: scaleSize(addButtonSize),
+                    height: scaleSize(addButtonSize),
+                    backgroundColor: "#fff",
+                    borderRadius: scaleSize(addButtonSize),
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Loading width={50} height={50} borderSize={30}></Loading>
+                </View>
+              ) : (
+                <Animated.View
+                  onTouchStart={(event) => {
+                    event.stopPropagation();
+                    setRecording(1);
+                    handleStart();
+                    tapStartLocation.current = {
+                      x: event.nativeEvent.locationX,
+                      y: event.nativeEvent.locationY,
+                    };
+                  }}
+                  onTouchMove={(event) => {
+                    console.log(
+                      event.nativeEvent.locationY - tapStartLocation.current.y
+                    );
+                    if (
+                      event.nativeEvent.locationY - tapStartLocation.current.y <
+                      -5
+                    ) {
+                      setRecording(2);
+                    } else {
+                      setRecording(1);
+                    }
+                  }}
+                  onTouchCancel={(event) => {
+                    setRecording(0);
+                    ExpoSpeechRecognitionModule.abort();
+                  }}
+                  onTouchEnd={() => {
+                    console.log("ontouchend");
+                    if (recording === 2) {
+                      setRecording(0);
+                      ExpoSpeechRecognitionModule.abort();
+                      return;
+                    }
+                    ExpoSpeechRecognitionModule.stop();
+                  }}
+                  style={{
+                    width: scaleSize(addButtonSize),
+                    height: scaleSize(addButtonSize),
+                    backgroundColor: recording ? "#FF7C14" : "#fff",
+                    borderRadius: 60,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Image
+                    style={{ width: 40, height: 40 }}
+                    source={
+                      recording
+                        ? require("@/assets/home/voicewhite.png")
+                        : require("@/assets/home/voice.png")
+                    }
+                  ></Image>
+                </Animated.View>
+              )}
+            </GestureHandlerRootView>
           )}
         </View>
-      )}
+      </View>
 
       {/* <View>
         {!recognizing ? (

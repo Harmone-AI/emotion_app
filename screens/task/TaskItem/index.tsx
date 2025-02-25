@@ -1,7 +1,13 @@
 import { Task } from "@/api/api";
 import { useScaleSize } from "@/hooks/useScreen";
 import React, { useEffect } from "react";
-import { Keyboard, TextInput, View, StyleSheet } from "react-native";
+import {
+  Keyboard,
+  TextInput,
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+} from "react-native";
 import Animated, {
   interpolate,
   SharedValue,
@@ -14,6 +20,7 @@ import { RectButton } from "react-native-gesture-handler";
 import { HBase } from "@/components/HBase";
 import { Image } from "expo-image";
 import { useQuestStore } from "@/hooks/zustand/quest";
+import AppButton from "@/components/AppButton";
 
 const styles = StyleSheet.create({
   leftAction: {
@@ -74,6 +81,7 @@ const RightAction = ({
     ],
   }));
   const scaleSize = useScaleSize();
+
   return (
     <Animated.View
       style={[
@@ -168,6 +176,7 @@ export default React.memo(({ id, task }: { id: number; task: Task }) => {
     };
   }, []);
   const deleteTask = useQuestStore((state) => state.deleteTask);
+  const finishTask = useQuestStore((state) => state.finishTask);
   return (
     <View
       key={id}
@@ -249,7 +258,7 @@ export default React.memo(({ id, task }: { id: number; task: Task }) => {
         >
           <TextInput
             ref={inputRef}
-            editable={editing}
+            editable={editing || !task?.content}
             style={{
               fontSize: scaleSize(14),
               lineHeight: scaleSize(20),
@@ -265,16 +274,33 @@ export default React.memo(({ id, task }: { id: number; task: Task }) => {
             numberOfLines={2}
             multiline={true}
             defaultValue={task?.content}
+            autoFocus={!task?.content}
           />
-          <View
-            style={{
-              borderColor: "#e0e0e0",
-              borderRadius: scaleSize(32),
-              borderWidth: scaleSize(2),
-              width: scaleSize(32),
-              height: scaleSize(32),
+          <AppButton
+            style={[
+              {
+                borderColor: "#e0e0e0",
+                borderRadius: scaleSize(32),
+                borderWidth: scaleSize(2),
+                width: scaleSize(32),
+                height: scaleSize(32),
+                justifyContent: "center",
+                alignItems: "center",
+              },
+              task.status === 1 && {
+                backgroundColor: "#27AE60",
+                borderWidth: 0,
+              },
+            ]}
+            onPress={() => {
+              finishTask(task?.task_id);
             }}
-          />
+          >
+            <Image
+              source={require("../checkmark.svg")}
+              style={{ width: scaleSize(24), height: scaleSize(24) }}
+            />
+          </AppButton>
         </View>
       </Swipeable>
     </View>

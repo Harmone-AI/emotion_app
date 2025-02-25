@@ -4,16 +4,20 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import storage, { zustandStorage } from "../storage";
 
 interface QuestState {
+  latestQuestId: number;
   questMap: { [index: string | "latest"]: api.Quest };
   taskMap: { [index: string]: api.Task };
   post: (userInput: string) => Promise<void>;
   confirm: (taskId: number) => Promise<void>;
   deleteTask: (taskId: number) => Promise<void>;
+  finishTask: (taskId: number) => Promise<void>;
+  addTask: (questId: number, content: string) => Promise<void>;
 }
 
 export const useQuestStore = create<QuestState>()(
   persist(
     (set, get) => ({
+      latestQuestId: 0,
       questMap: {},
       taskMap: {},
       post: async (userInput: string) => {
@@ -30,9 +34,13 @@ export const useQuestStore = create<QuestState>()(
             return json;
           })
         );
-        set({
-          questMap: { [res.id]: res, latest: res },
-          taskMap: tasks,
+        set((state) => {
+          return {
+            ...state,
+            questMap: { ...state.questMap, [res.id]: res },
+            taskMap: { ...state.taskMap, ...tasks },
+            latestQuestId: res.id,
+          };
         });
       },
       confirm: async (questId: number) => {
@@ -45,10 +53,6 @@ export const useQuestStore = create<QuestState>()(
             questMap: {
               ...state.questMap,
               [questId]: newQuest,
-              latest:
-                questId === state.questMap["latest"].id
-                  ? newQuest
-                  : state.questMap["latest"],
             },
           };
         });
@@ -58,24 +62,54 @@ export const useQuestStore = create<QuestState>()(
           const questId = Object.keys(state.questMap).find((key) => {
             return state.questMap[key].taskids.includes(taskId.toString());
           })!;
-          const taskids = state.questMap[questId].taskids;
-          let newTaskids = taskids.replace(taskId + ",", "");
-          if (newTaskids === taskids) {
-            newTaskids = taskids.replace("," + taskId, "");
-          }
-          if (newTaskids === taskids) {
-            newTaskids = taskids.replace(taskId.toString(), "");
-          }
+          const newTaskids = state.questMap[questId].taskids
+            .split(",")
+            .filter((item) => item !== taskId.toString())
+            .join(",");
           const newQuest = { ...state.questMap[questId], taskids: newTaskids };
           return {
             ...state,
             questMap: {
               ...state.questMap,
               [questId]: newQuest,
-              latest:
-                questId === String(state.questMap["latest"].id)
-                  ? newQuest
-                  : state.questMap["latest"],
+            },
+          };
+        });
+      },
+      finishTask: async (taskId: number) => {
+        set((state) => {
+          return {
+            ...state,
+            taskMap: {
+              ...state.taskMap,
+              [taskId]: {
+                ...state.taskMap[taskId],
+                status: state.taskMap[taskId].status === 0 ? 1 : 0,
+              },
+            },
+          };
+        });
+      },
+      addTask: async (questId: number, content: string) => {
+        const task = await api.add_task({
+          list_id: questId,
+          content,
+        });
+        const newTaskIds = get().questMap[questId].taskids.split(",");
+        newTaskIds.push(String(task.task_id));
+        set((state) => {
+          return {
+            ...state,
+            questMap: {
+              ...state.questMap,
+              [questId]: {
+                ...state.questMap[questId],
+                taskids: newTaskIds.join(","),
+              },
+            },
+            taskMap: {
+              ...state.taskMap,
+              [task.task_id]: task,
             },
           };
         });
