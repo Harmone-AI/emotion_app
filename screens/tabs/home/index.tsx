@@ -430,6 +430,7 @@ export default function HomeScreen({ navigation }: any) {
               ) : (
                 <Animated.View
                   onTouchStart={(event) => {
+                    console.log("onTouchStart");
                     event.stopPropagation();
                     setRecording(1);
                     handleStart();
@@ -452,13 +453,14 @@ export default function HomeScreen({ navigation }: any) {
                     }
                   }}
                   onTouchCancel={(event) => {
+                    console.log("onTouchCancel");
                     setRecording(0);
                     ExpoSpeechRecognitionModule.abort();
                   }}
                   onTouchEnd={() => {
                     console.log("ontouchend");
+                    setRecording(0);
                     if (recording === 2) {
-                      setRecording(0);
                       ExpoSpeechRecognitionModule.abort();
                       return;
                     }

@@ -87,9 +87,7 @@ export default function Navigation() {
         }}
         style={{ flex: 1 }}
       > */}
-      <Stack.Navigator
-        initialRouteName={__DEV__ ? initialRouteName : initialRouteName}
-      >
+      <Stack.Navigator initialRouteName={__DEV__ ? "task" : initialRouteName}>
         {/* {!isSignedIn ? (
           <>
             <Stack.Screen name='SignIn' component={SignInScreen} />

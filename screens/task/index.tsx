@@ -1,8 +1,15 @@
 import { HBase } from "@/components/HBase";
 import Page from "@/components/Page";
-import { useScaleSize } from "@/hooks/useScreen";
+import { useSafeBottom, useScaleSize } from "@/hooks/useScreen";
 import { Image } from "expo-image";
-import { ScrollView, TextInput, View } from "react-native";
+import {
+  ScrollView,
+  TextInput,
+  View,
+  Animated,
+  useAnimatedValue,
+  Share as PlatformShare,
+} from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -22,6 +29,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SharedValue } from "react-native-reanimated";
 import TaskItem from "./TaskItem";
 import { useQuestStore } from "@/hooks/zustand/quest";
+import Share, { Social } from "react-native-share";
 
 export default function TaskScreen() {
   const scaleSize = useScaleSize();
@@ -42,41 +50,182 @@ export default function TaskScreen() {
   const unFinishTaskIds = quest?.taskids.split(",").filter((id) => {
     return tasks?.[Number(id)]?.status === 0;
   });
+  const unFinishTaskCount = React.useRef(unFinishTaskIds?.length || 0);
   const [folderFinishedTasks, setFolderFinishedTasks] =
     useState<boolean>(false);
-  return (
-    <Page
-      style={{
-        backgroundColor: "#e6eff4",
-        paddingBottom: scaleSize(insets.bottom ? 0 : 20),
-      }}
-      safeAreaProps={{
-        style: {
-          width: scaleSize(370),
+  const backgroundScale = useAnimatedValue(1);
+  const startDoneAnimation = React.useCallback(() => {
+    Animated.timing(backgroundScale, {
+      toValue: 3,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  React.useEffect(() => {
+    if (unFinishTaskCount.current !== 0 && unFinishTaskIds.length === 0) {
+      startDoneAnimation();
+    }
+  }, [startDoneAnimation, unFinishTaskIds]);
+  React.useEffect(() => {
+    Animated.timing(backgroundScale, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+    // console.log("backgroundScale", backgroundScale);
+  }, []);
+  const [readyToShare, setReadyToShare] = React.useState(false);
+  const share = React.useCallback(() => {
+    setReadyToShare(true);
+  }, []);
+  const safeBottom = useSafeBottom();
+  const header = (
+    <View>
+      <Image
+        contentFit="contain"
+        style={{
+          width: scaleSize(118),
+          height: scaleSize(118),
           alignSelf: "center",
-          borderRadius: scaleSize(24),
-          backgroundColor: "#fff",
-          overflow: "hidden",
-          minHeight: scaleSize(500),
-          flex: 1,
-        },
-        mode: "margin",
-      }}
-      scrollEnabled={false}
-    >
-      <ScrollView>
+          marginTop: scaleSize(30),
+        }}
+        source={{ uri: quest.begin_img }}
+      />
+      <HBase
+        style={{
+          fontSize: scaleSize(32),
+          lineHeight: scaleSize(32),
+          textTransform: "capitalize",
+          fontWeight: "700",
+          color: "#fff",
+          textAlign: "center",
+          marginTop: scaleSize(12),
+        }}
+      >
+        {quest?.quest_title}
+      </HBase>
+      <HBase
+        style={{
+          fontSize: scaleSize(14),
+          lineHeight: scaleSize(20),
+          fontWeight: "500",
+          color: "#fff",
+          textAlign: "center",
+        }}
+      >
+        {quest?.user_title}
+      </HBase>
+
+      <View
+        style={{
+          borderRadius: scaleSize(52),
+          backgroundColor: "#d46422",
+          borderStyle: "solid",
+          borderColor: "#f8b200",
+          borderWidth: scaleSize(2),
+          width: scaleSize(338),
+          height: scaleSize(24),
+          alignSelf: "center",
+          marginTop: scaleSize(20),
+        }}
+      >
         <View
           style={{
-            backgroundColor: "#F29762",
-            borderRadius: scaleSize(800),
-            width: scaleSize(800),
-            height: scaleSize(800),
-            top: scaleSize(-450),
-            alignSelf: "center",
+            borderRadius: scaleSize(26),
+            backgroundColor: "#ffd000",
+            width: scaleSize(percent * 330),
+            height: "100%",
+            overflow: "hidden",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        />
+        <View
+          style={{
             position: "absolute",
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          {/* <View
+          <HBase
+            style={{
+              fontSize: scaleSize(14),
+              fontWeight: "700",
+              color: "#f29762",
+            }}
+          >
+            {finishedCount}/{quest?.taskids.split(",").length || ""}
+          </HBase>
+        </View>
+        <View
+          style={{
+            width: scaleSize(44),
+            height: scaleSize(44),
+            backgroundColor: "#ffd000",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: scaleSize(44),
+            position: "absolute",
+            right: scaleSize(-2),
+            top: scaleSize(-12),
+          }}
+        >
+          <Image
+            source={require("./goal.svg")}
+            style={{ width: scaleSize(20), height: scaleSize(20) }}
+          />
+        </View>
+      </View>
+    </View>
+  );
+  return (
+    <View
+      style={{
+        flex: 1,
+      }}
+    >
+      <Page
+        style={{
+          backgroundColor: "#e6eff4",
+          paddingBottom: scaleSize(insets.bottom ? 0 : 20),
+        }}
+        safeAreaProps={{
+          style: {
+            width: scaleSize(370),
+            alignSelf: "center",
+            borderRadius: scaleSize(24),
+            backgroundColor: "#fff",
+            overflow: "hidden",
+            minHeight: scaleSize(500),
+            flex: 1,
+          },
+          mode: "margin",
+        }}
+        scrollEnabled={false}
+      >
+        <ScrollView>
+          <Animated.View
+            style={{
+              backgroundColor: "#F29762",
+              borderRadius: scaleSize(800),
+              width: scaleSize(800),
+              height: scaleSize(800),
+              top: scaleSize(-450),
+              alignSelf: "center",
+              position: "absolute",
+              transform: [
+                {
+                  scale: backgroundScale,
+                },
+              ],
+            }}
+          >
+            {/* <View
             style={{
               width: scaleSize(370),
               height: scaleSize(400),
@@ -85,300 +234,431 @@ export default function TaskScreen() {
               borderTopRightRadius: scaleSize(24),
             }}
           ></View> */}
-        </View>
-        <Image
-          contentFit="contain"
+          </Animated.View>
+          {header}
+          <GestureHandlerRootView style={{ flex: 1, marginTop: scaleSize(40) }}>
+            {unFinishTaskIds?.map((id, index) => {
+              const task = tasks?.[Number(id)];
+              if (task.status !== 0) {
+                return null;
+              }
+              return <TaskItem key={id} id={Number(id)} task={task!} />;
+            })}
+          </GestureHandlerRootView>
+          {finishTaskIds.length > 0 && (
+            <AppButton
+              onPress={() => {
+                setFolderFinishedTasks((s) => !s);
+              }}
+              style={{
+                flexDirection: "row",
+                marginTop: scaleSize(24),
+                marginBottom: scaleSize(16),
+                alignItems: "center",
+                alignSelf: "center",
+              }}
+            >
+              <HBase
+                style={{
+                  fontSize: scaleSize(12),
+                  fontWeight: "800",
+                  color: "rgba(0, 0, 0, 0.25)",
+                  textAlign: "left",
+                }}
+              >
+                {folderFinishedTasks
+                  ? `Completed ${finishTaskIds.length} goals`
+                  : "Fold up completed goals"}
+              </HBase>
+              <Image
+                source={require("./arrow.svg")}
+                style={{
+                  width: scaleSize(7),
+                  height: scaleSize(4),
+                  marginLeft: scaleSize(6),
+                  transform: [
+                    { rotate: folderFinishedTasks ? "0deg" : "180deg" },
+                  ],
+                }}
+              />
+            </AppButton>
+          )}
+          {!folderFinishedTasks &&
+            finishTaskIds?.map((id, index) => {
+              const task = tasks?.[Number(id)];
+              return <TaskItem key={id} id={Number(id)} task={task!} />;
+            })}
+        </ScrollView>
+        <AppButton
           style={{
-            width: scaleSize(118),
-            height: scaleSize(118),
-            alignSelf: "center",
-            marginTop: scaleSize(30),
+            backgroundColor: "#fff",
+            borderRadius: scaleSize(40),
+            width: scaleSize(40),
+            height: scaleSize(40),
+            justifyContent: "center",
+            alignItems: "center",
+            position: "absolute",
+            top: scaleSize(18),
+            right: unFinishTaskIds.length > 0 ? scaleSize(16) : undefined,
+            left: unFinishTaskIds.length > 0 ? undefined : scaleSize(16),
           }}
-          source={require("@/screens/tasks/head.png")}
-        />
-        <HBase
-          style={{
-            fontSize: scaleSize(32),
-            lineHeight: scaleSize(32),
-            textTransform: "capitalize",
-            fontWeight: "700",
-            color: "#fff",
-            textAlign: "center",
-            marginTop: scaleSize(12),
+          onPress={() => {
+            navigation.goBack();
           }}
         >
-          {quest?.quest_title}
-        </HBase>
-        <HBase
-          style={{
-            fontSize: scaleSize(14),
-            lineHeight: scaleSize(20),
-            fontWeight: "500",
-            color: "#fff",
-            textAlign: "center",
-          }}
-        >
-          {quest?.user_title}
-        </HBase>
-
-        <View
-          style={{
-            borderRadius: scaleSize(52),
-            backgroundColor: "#d46422",
-            borderStyle: "solid",
-            borderColor: "#f8b200",
-            borderWidth: scaleSize(2),
-            width: scaleSize(338),
-            height: scaleSize(24),
-            alignSelf: "center",
-            marginTop: scaleSize(20),
-          }}
-        >
-          <View
+          <Image
+            source={require("@/assets/images/close.svg")}
             style={{
-              borderTopLeftRadius: scaleSize(26),
-              borderBottomLeftRadius: scaleSize(26),
-              backgroundColor: "#ffd000",
-              width: scaleSize(percent * 338),
-              height: "100%",
-              overflow: "hidden",
-              justifyContent: "center",
-              alignItems: "center",
+              width: scaleSize(24),
+              height: scaleSize(24),
             }}
           />
-          <View
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              right: 0,
-              bottom: 0,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <HBase
-              style={{
-                fontSize: scaleSize(14),
-                fontWeight: "700",
-                color: "#f29762",
-              }}
-            >
-              {finishedCount}/{quest?.taskids.split(",").length || ""}
-            </HBase>
-          </View>
-          <View
-            style={{
-              width: scaleSize(44),
-              height: scaleSize(44),
-              backgroundColor: "#ffd000",
-              justifyContent: "center",
-              alignItems: "center",
-              borderRadius: scaleSize(44),
-              position: "absolute",
-              right: scaleSize(-2),
-              top: scaleSize(-12),
-            }}
-          >
-            <Image
-              source={require("./goal.svg")}
-              style={{ width: scaleSize(20), height: scaleSize(20) }}
-            />
-          </View>
-        </View>
-        <GestureHandlerRootView style={{ flex: 1, marginTop: scaleSize(40) }}>
-          {unFinishTaskIds?.map((id, index) => {
-            const task = tasks?.[Number(id)];
-            if (task.status !== 0) {
-              return null;
-            }
-            return <TaskItem key={id} id={Number(id)} task={task!} />;
-          })}
-        </GestureHandlerRootView>
-        {finishTaskIds.length > 0 && (
+        </AppButton>
+        {unFinishTaskIds.length === 0 && (
           <AppButton
-            onPress={() => {
-              setFolderFinishedTasks((s) => !s);
-            }}
             style={{
-              flexDirection: "row",
-              marginTop: scaleSize(24),
-              marginBottom: scaleSize(16),
-              alignItems: "center",
-              alignSelf: "center",
-            }}
-          >
-            <HBase
-              style={{
-                fontSize: scaleSize(12),
-                fontWeight: "800",
-                color: "rgba(0, 0, 0, 0.25)",
-                textAlign: "left",
-              }}
-            >
-              {folderFinishedTasks
-                ? `Completed ${finishTaskIds.length} goals`
-                : "Fold up completed goals"}
-            </HBase>
-            <Image
-              source={require("./arrow.svg")}
-              style={{
-                width: scaleSize(7),
-                height: scaleSize(4),
-                marginLeft: scaleSize(6),
-                transform: [
-                  { rotate: folderFinishedTasks ? "0deg" : "180deg" },
-                ],
-              }}
-            />
-          </AppButton>
-        )}
-        {!folderFinishedTasks &&
-          finishTaskIds?.map((id, index) => {
-            const task = tasks?.[Number(id)];
-            return <TaskItem key={id} id={Number(id)} task={task!} />;
-          })}
-      </ScrollView>
-      <AppButton
-        style={{
-          backgroundColor: "#fff",
-          borderRadius: scaleSize(40),
-          width: scaleSize(40),
-          height: scaleSize(40),
-          justifyContent: "center",
-          alignItems: "center",
-          position: "absolute",
-          top: scaleSize(18),
-          right: scaleSize(16),
-        }}
-        onPress={() => {
-          navigation.goBack();
-        }}
-      >
-        <Image
-          source={require("@/assets/images/close.svg")}
-          style={{
-            width: scaleSize(24),
-            height: scaleSize(24),
-          }}
-        />
-      </AppButton>
-      <View
-        style={{
-          flexDirection: "row",
-          alignSelf: "center",
-          marginBottom: scaleSize(16),
-        }}
-      >
-        {quest.confirmed ? (
-          <AppButton
-            onPress={() => {
-              addTask(quest.id, "");
-            }}
-            style={{
-              shadowColor: "#cf620c",
-              shadowOffset: {
-                width: 0,
-                height: 2,
-              },
-              shadowRadius: 0,
-              elevation: 0,
-              shadowOpacity: 1,
-              borderRadius: 8,
-              backgroundColor: "#ff7c14",
-              width: scaleSize(338),
+              backgroundColor: "#fff",
+              borderRadius: scaleSize(40),
+              width: scaleSize(40),
               height: scaleSize(40),
               justifyContent: "center",
               alignItems: "center",
+              position: "absolute",
+              top: scaleSize(18),
+              right: scaleSize(16),
+            }}
+            onPress={() => {
+              share();
+            }}
+          >
+            <Image
+              source={require("@/assets/images/share.svg")}
+              style={{
+                width: scaleSize(24),
+                height: scaleSize(24),
+              }}
+            />
+          </AppButton>
+        )}
+        {unFinishTaskIds?.length > 0 && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignSelf: "center",
+              marginBottom: scaleSize(16),
+              position: "absolute",
+              bottom: 0,
+            }}
+          >
+            {quest.confirmed ? (
+              <AppButton
+                onPress={() => {
+                  addTask(quest.id, "");
+                }}
+                style={{
+                  shadowColor: "#cf620c",
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowRadius: 0,
+                  elevation: 0,
+                  shadowOpacity: 1,
+                  borderRadius: 8,
+                  backgroundColor: "#ff7c14",
+                  width: scaleSize(338),
+                  height: scaleSize(40),
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <HBase
+                  style={{
+                    fontSize: scaleSize(15),
+                    lineHeight: scaleSize(15),
+                    textTransform: "uppercase",
+                    fontWeight: "700",
+                    color: "#fff",
+                    textAlign: "left",
+                    textAlignVertical: "center",
+                    alignSelf: "center",
+                    marginTop: scaleSize(4),
+                  }}
+                >
+                  + Add goal
+                </HBase>
+              </AppButton>
+            ) : (
+              <>
+                <AppButton
+                  style={{
+                    shadowColor: "#b49300",
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+                    shadowRadius: 0,
+                    elevation: 0,
+                    shadowOpacity: 1,
+                    borderRadius: 12,
+                    backgroundColor: "#ffd000",
+                    width: scaleSize(165),
+                    height: scaleSize(40),
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <HBase
+                    style={{
+                      fontSize: scaleSize(15),
+                      textTransform: "uppercase",
+                      fontWeight: "700",
+                      fontFamily: "SF Pro Rounded",
+                      color: "#53270d",
+                      textAlign: "left",
+                    }}
+                  >
+                    Regenerate
+                  </HBase>
+                </AppButton>
+                <AppButton
+                  style={{
+                    marginLeft: scaleSize(8),
+                    shadowColor: "#b49300",
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+                    shadowRadius: 0,
+                    elevation: 0,
+                    shadowOpacity: 1,
+                    borderRadius: 12,
+                    backgroundColor: "#FF7C14",
+                    width: scaleSize(165),
+                    height: scaleSize(40),
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  onPress={() => {
+                    confirm(quest.id);
+                  }}
+                >
+                  <HBase
+                    style={{
+                      fontSize: scaleSize(15),
+                      textTransform: "uppercase",
+                      fontWeight: "700",
+                      fontFamily: "SF Pro Rounded",
+                      color: "#fff",
+                      textAlign: "left",
+                    }}
+                  >
+                    confirm
+                  </HBase>
+                </AppButton>
+              </>
+            )}
+          </View>
+        )}
+        {unFinishTaskIds?.length === 0 && (
+          <AppButton
+            style={{
+              padding: scaleSize(12),
+              alignItems: "center",
+              gap: scaleSize(12),
+              borderRadius: scaleSize(12),
+              borderColor: "#DEE200",
+              backgroundColor: "#FBFF00",
+              shadowColor: "#DEE200",
+              shadowOffset: { width: 0, height: scaleSize(3) },
+              shadowOpacity: 1,
+              shadowRadius: 0,
+              position: "absolute",
+              bottom: 0,
+              alignSelf: "center",
+              marginBottom: scaleSize(32),
             }}
           >
             <HBase
               style={{
-                fontSize: scaleSize(15),
-                lineHeight: scaleSize(15),
+                color: "#282E32",
+                fontSize: scaleSize(12),
+                fontWeight: "800",
                 textTransform: "uppercase",
-                fontWeight: "700",
-                color: "#fff",
-                textAlign: "left",
-                textAlignVertical: "center",
-                alignSelf: "center",
-                marginTop: scaleSize(4),
               }}
             >
-              + Add goal
+              Completed 10 goals
             </HBase>
           </AppButton>
-        ) : (
-          <>
-            <AppButton
-              style={{
-                shadowColor: "#b49300",
-                shadowOffset: {
-                  width: 0,
-                  height: 2,
-                },
-                shadowRadius: 0,
-                elevation: 0,
-                shadowOpacity: 1,
-                borderRadius: 12,
-                backgroundColor: "#ffd000",
-                width: scaleSize(165),
-                height: scaleSize(40),
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <HBase
-                style={{
-                  fontSize: scaleSize(15),
-                  textTransform: "uppercase",
-                  fontWeight: "700",
-                  fontFamily: "SF Pro Rounded",
-                  color: "#53270d",
-                  textAlign: "left",
-                }}
-              >
-                Regenerate
-              </HBase>
-            </AppButton>
-            <AppButton
-              style={{
-                marginLeft: scaleSize(8),
-                shadowColor: "#b49300",
-                shadowOffset: {
-                  width: 0,
-                  height: 2,
-                },
-                shadowRadius: 0,
-                elevation: 0,
-                shadowOpacity: 1,
-                borderRadius: 12,
-                backgroundColor: "#FF7C14",
-                width: scaleSize(165),
-                height: scaleSize(40),
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-              onPress={() => {
-                confirm(quest.id);
-              }}
-            >
-              <HBase
-                style={{
-                  fontSize: scaleSize(15),
-                  textTransform: "uppercase",
-                  fontWeight: "700",
-                  fontFamily: "SF Pro Rounded",
-                  color: "#fff",
-                  textAlign: "left",
-                }}
-              >
-                confirm
-              </HBase>
-            </AppButton>
-          </>
         )}
-      </View>
-    </Page>
+      </Page>
+      {readyToShare && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.7)",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: scaleSize(370),
+              height: scaleSize(507),
+              backgroundColor: "#fff",
+              borderRadius: scaleSize(24),
+              alignItems: "center",
+            }}
+          >
+            <View
+              style={{
+                width: scaleSize(360),
+                height: scaleSize(418),
+                backgroundColor: "#F29762",
+                alignSelf: "center",
+                marginTop: scaleSize(5),
+                borderRadius: scaleSize(20),
+              }}
+            >
+              {header}
+            </View>
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                alignItems: "center",
+                // backgroundColor: "red",
+                paddingHorizontal: scaleSize(15),
+              }}
+            >
+              <View
+                style={{
+                  width: scaleSize(50),
+                  height: scaleSize(50),
+                  marginRight: scaleSize(12),
+                  backgroundColor: "#FF7A2D",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  source={{ uri: quest.begin_img }}
+                  style={{ width: scaleSize(34), height: scaleSize(34) }}
+                  contentFit="contain"
+                />
+              </View>
+              <HBase style={{ flex: 1 }}>{quest.quest_title}</HBase>
+              <Image
+                source={require("@/assets/images/qr_test.png")}
+                style={{ width: scaleSize(50), height: scaleSize(50) }}
+              />
+            </View>
+          </View>
+          <AppButton
+            style={{
+              width: scaleSize(60),
+              height: scaleSize(60),
+              backgroundColor: "#fff",
+              borderRadius: scaleSize(60),
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: scaleSize(16),
+            }}
+            onPress={() => {
+              setReadyToShare(false);
+            }}
+          >
+            <Image
+              source={require("@/assets/images/close.svg")}
+              style={{ width: scaleSize(24), height: scaleSize(24) }}
+            />
+          </AppButton>
+          <View
+            style={{
+              marginTop: safeBottom === 20 ? scaleSize(16) : scaleSize(46),
+              flexDirection: "row",
+              width: scaleSize(370),
+              alignSelf: "center",
+              justifyContent: "space-around",
+              marginBottom:
+                safeBottom === 20 ? safeBottom : scaleSize(40 + safeBottom),
+            }}
+          >
+            <AppButton
+              onPress={() => {
+                Share.share({
+                  ...require("./test.json"),
+                });
+              }}
+            >
+              <Image
+                source={require("@/assets/images/x.svg")}
+                style={{ width: scaleSize(60), height: scaleSize(60) }}
+              />
+            </AppButton>
+            <AppButton
+              onPress={() => {
+                const shareOptions = {
+                  backgroundImage: "http://urlto.png", // url or an base64 string
+                  stickerImage: require("./test.json").uri, //or you can use "data:" url
+                  backgroundBottomColor: "#fefefe",
+                  backgroundTopColor: "#906df4",
+                  // attributionURL: "http://deep-link-to-app", //in beta
+                  appId: "219376304", //facebook appId
+                  social: Share.Social.FACEBOOK_STORIES,
+                };
+
+                Share.shareSingle(shareOptions);
+              }}
+            >
+              <Image
+                source={require("@/assets/images/facebook.svg")}
+                style={{ width: scaleSize(60), height: scaleSize(60) }}
+              />
+            </AppButton>
+            <AppButton
+              onPress={() => {
+                Share.shareSingle({
+                  social: Share.Social.INSTAGRAM,
+                  type: "image/*",
+                  ...require("./test.json"),
+                });
+              }}
+            >
+              <Image
+                source={require("@/assets/images/instagram.svg")}
+                style={{ width: scaleSize(60), height: scaleSize(60) }}
+              />
+            </AppButton>
+            <AppButton
+              onPress={() => {
+                // Share.share({
+                //   url: "",
+                // });
+              }}
+            >
+              <Image
+                source={require("@/assets/images/thread.svg")}
+                style={{ width: scaleSize(60), height: scaleSize(60) }}
+              />
+            </AppButton>
+            <AppButton
+              onPress={() => {
+                PlatformShare.share(require("./test.json"));
+              }}
+            >
+              <Image
+                source={require("./more.svg")}
+                style={{ width: scaleSize(60), height: scaleSize(60) }}
+              />
+            </AppButton>
+          </View>
+        </View>
+      )}
+    </View>
   );
 }
