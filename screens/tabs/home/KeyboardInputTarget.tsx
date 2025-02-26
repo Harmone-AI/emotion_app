@@ -49,6 +49,7 @@ export default function KeyboardInputTargetScreen() {
       await post(userInput);
       navigation.dispatch(StackActions.replace("task"));
     } catch (e) {
+      console.error("Error done:", e);
       setShowLoading(false);
     }
   };

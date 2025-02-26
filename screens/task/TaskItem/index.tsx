@@ -21,6 +21,7 @@ import { HBase } from "@/components/HBase";
 import { Image } from "expo-image";
 import { useQuestStore } from "@/hooks/zustand/quest";
 import AppButton from "@/components/AppButton";
+import AppLoading from "@/components/Loading";
 
 const styles = StyleSheet.create({
   leftAction: {
@@ -47,11 +48,6 @@ const styles = StyleSheet.create({
   rightActionsView: {
     width: 140,
     flexDirection: "row",
-  },
-  rightAction: {
-    alignItems: "center",
-    flex: 1,
-    justifyContent: "center",
   },
 });
 
@@ -85,10 +81,10 @@ const RightAction = ({
   return (
     <Animated.View
       style={[
-        { flex: 1 },
-        text === "delete" && {
-          height: scaleSize(56),
-          marginTop: scaleSize(2),
+        {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
         },
         animatedStyle,
       ]}
@@ -101,6 +97,12 @@ const RightAction = ({
             borderRadius: 16,
             marginLeft: 10,
           },
+          {
+            alignItems: "center",
+            justifyContent: "center",
+            width: 58,
+            height: 58,
+          },
         ]}
         onPress={onPress}
       >
@@ -108,8 +110,10 @@ const RightAction = ({
           <Image
             source={require("../RightActions/edit.svg")}
             style={{
-              width: 60,
-              height: 60,
+              width: (60 * 58) / 62,
+              height: 58,
+              alignSelf: "center",
+              marginTop: 2,
             }}
           />
         )}
@@ -177,6 +181,9 @@ export default React.memo(({ id, task }: { id: number; task: Task }) => {
   }, []);
   const deleteTask = useQuestStore((state) => state.deleteTask);
   const finishTask = useQuestStore((state) => state.finishTask);
+  const contentRef = React.useRef<string>(task?.content);
+  const [loading, setLoading] = React.useState(false);
+  const patchTask = useQuestStore((state) => state.patchTask);
   return (
     <View
       key={id}
@@ -209,9 +216,16 @@ export default React.memo(({ id, task }: { id: number; task: Task }) => {
                 setEditing(true);
               }, 300);
             },
-            () => {
-              deleteTask(id);
-              swipeable.close();
+            async () => {
+              try {
+                setLoading(true);
+                swipeable.close();
+                await deleteTask(id);
+              } catch (e) {
+                console.error("Error deleteTask:", e);
+              } finally {
+                setLoading(false);
+              }
             }
           );
           // return RightAction(
@@ -235,7 +249,8 @@ export default React.memo(({ id, task }: { id: number; task: Task }) => {
           style={{
             marginVertical: scaleSize(3),
             width: scaleSize(338),
-            height: scaleSize(56),
+            minHeight: scaleSize(56),
+            maxHeight: scaleSize(256),
             flexDirection: "row",
             alignItems: "center",
             paddingLeft: scaleSize(12),
@@ -258,7 +273,7 @@ export default React.memo(({ id, task }: { id: number; task: Task }) => {
         >
           <TextInput
             ref={inputRef}
-            editable={editing || !task?.content}
+            editable={!loading && (editing || !task?.content)}
             style={{
               fontSize: scaleSize(14),
               lineHeight: scaleSize(20),
@@ -268,39 +283,60 @@ export default React.memo(({ id, task }: { id: number; task: Task }) => {
               textAlign: "left",
               flex: 1,
               textAlignVertical: "center",
-              paddingTop: 0,
-              paddingBottom: 0,
+              paddingTop: scaleSize(10),
+              paddingBottom: scaleSize(10),
             }}
-            numberOfLines={2}
+            numberOfLines={4}
             multiline={true}
             defaultValue={task?.content}
-            autoFocus={!task?.content}
-          />
-          <AppButton
-            style={[
-              {
-                borderColor: "#e0e0e0",
-                borderRadius: scaleSize(32),
-                borderWidth: scaleSize(2),
-                width: scaleSize(32),
-                height: scaleSize(32),
-                justifyContent: "center",
-                alignItems: "center",
-              },
-              task.status === 1 && {
-                backgroundColor: "#27AE60",
-                borderWidth: 0,
-              },
-            ]}
-            onPress={() => {
-              finishTask(task?.task_id);
+            onChangeText={(text) => {
+              contentRef.current = text;
             }}
-          >
-            <Image
-              source={require("../checkmark.svg")}
-              style={{ width: scaleSize(24), height: scaleSize(24) }}
-            />
-          </AppButton>
+            autoFocus={!task?.content}
+            onBlur={async () => {
+              if (contentRef.current !== task?.content) {
+                try {
+                  setLoading(true);
+                  await patchTask(task?.task_id!, {
+                    content: contentRef.current,
+                  });
+                } catch (error) {
+                  console.error("Error patchTask:", error);
+                } finally {
+                  setLoading(false);
+                }
+              }
+            }}
+          />
+          {loading ? (
+            <AppLoading width={scaleSize(32)} height={scaleSize(32)} />
+          ) : (
+            <AppButton
+              style={[
+                {
+                  borderColor: "#e0e0e0",
+                  borderRadius: scaleSize(32),
+                  borderWidth: scaleSize(2),
+                  width: scaleSize(32),
+                  height: scaleSize(32),
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+                task.status === 1 && {
+                  backgroundColor: "#27AE60",
+                  borderWidth: 0,
+                },
+              ]}
+              onPress={() => {
+                finishTask(task?.task_id);
+              }}
+            >
+              <Image
+                source={require("../checkmark.svg")}
+                style={{ width: scaleSize(24), height: scaleSize(24) }}
+              />
+            </AppButton>
+          )}
         </View>
       </Swipeable>
     </View>

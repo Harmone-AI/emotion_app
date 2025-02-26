@@ -2,14 +2,16 @@ async function http<T>(url: string, params: any, method?: string): Promise<T> {
   let data = {
     method: method || "POST",
   };
-  if (!method || method == "POST") {
+  if (!method || method == "POST" || method == "PUT" || method == "PATCH") {
     data.body = JSON.stringify(params);
     data.headers = {
       "Content-Type": "application/json",
     };
   }
-  let res = await fetch("https://harmone.ai/new/api" + url, data);
-  return (await res.json()) as T;
+  let res = await fetch(process.env.EXPO_PUBLIC_ENDPOINT_URL + url, data);
+  return res.status == 204
+    ? ((await res.text()) as T)
+    : ((await res.json()) as T);
 }
 
 export type Quest = {
@@ -57,5 +59,23 @@ export async function current_tasklist(userid) {
 
 export async function task(id: number): Promise<Task> {
   let res = await http<Task>("/get_task/" + id, {}, "get");
+  return res;
+}
+
+export async function delete_task(id: number): Promise<any> {
+  let res = await http<any>("/tasks/" + id, {}, "DELETE");
+  return res;
+}
+
+export async function patch_task(
+  id: number,
+  params: Partial<Task>
+): Promise<Task> {
+  let res = await http<Task>("/tasks/" + id, params, "PATCH");
+  return res;
+}
+
+export async function quests(): Promise<Quest[]> {
+  let res = await http<Quest[]>("/user/1/task_lists/", {}, "GET");
   return res;
 }

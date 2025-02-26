@@ -2,6 +2,7 @@ import { create } from "zustand";
 import * as api from "@/api/api";
 import { persist, createJSONStorage } from "zustand/middleware";
 import storage, { zustandStorage } from "../storage";
+import { immer } from "zustand/middleware/immer";
 
 interface QuestState {
   latestQuestId: number;
@@ -12,11 +13,13 @@ interface QuestState {
   deleteTask: (taskId: number) => Promise<void>;
   finishTask: (taskId: number) => Promise<void>;
   addTask: (questId: number, content: string) => Promise<void>;
+  patchTask: (taskId: number, params: Partial<api.Task>) => Promise<void>;
+  get: () => Promise<void>;
 }
 
 export const useQuestStore = create<QuestState>()(
   persist(
-    (set, get) => ({
+    immer((set, get) => ({
       latestQuestId: 0,
       questMap: {},
       taskMap: {},
@@ -43,6 +46,15 @@ export const useQuestStore = create<QuestState>()(
           };
         });
       },
+      get: async () => {
+        const res = await api.quests();
+        set((state) => {
+          state.questMap = res.reduce((map, quest) => {
+            map[quest.id] = quest;
+            return map;
+          }, {} as { [index: string]: api.Quest });
+        });
+      },
       confirm: async (questId: number) => {
         // await api.confirm_task(taskId);
         set((state) => {
@@ -57,23 +69,25 @@ export const useQuestStore = create<QuestState>()(
           };
         });
       },
+      patchTask: async (taskId: number, params: Partial<api.Task>) => {
+        const res = await api.patch_task(taskId, params);
+        set((state) => {
+          state.taskMap[res.task_id!] = res;
+        });
+      },
       deleteTask: async (taskId: number) => {
+        await api.delete_task(taskId);
         set((state) => {
           const questId = Object.keys(state.questMap).find((key) => {
-            return state.questMap[key].taskids.includes(taskId.toString());
+            return state.questMap[key].taskids
+              .split(",")
+              .includes(taskId.toString());
           })!;
-          const newTaskids = state.questMap[questId].taskids
+          state.questMap[questId].taskids = state.questMap[questId].taskids
             .split(",")
             .filter((item) => item !== taskId.toString())
             .join(",");
-          const newQuest = { ...state.questMap[questId], taskids: newTaskids };
-          return {
-            ...state,
-            questMap: {
-              ...state.questMap,
-              [questId]: newQuest,
-            },
-          };
+          delete state.taskMap[taskId];
         });
       },
       finishTask: async (taskId: number) => {
@@ -98,23 +112,11 @@ export const useQuestStore = create<QuestState>()(
         const newTaskIds = get().questMap[questId].taskids.split(",");
         newTaskIds.push(String(task.task_id));
         set((state) => {
-          return {
-            ...state,
-            questMap: {
-              ...state.questMap,
-              [questId]: {
-                ...state.questMap[questId],
-                taskids: newTaskIds.join(","),
-              },
-            },
-            taskMap: {
-              ...state.taskMap,
-              [task.task_id]: task,
-            },
-          };
+          state.questMap[questId].taskids = newTaskIds.join(",");
+          state.taskMap[task.task_id] = task;
         });
       },
-    }),
+    })),
     {
       name: "quest-storage", // name of the item in the storage (must be unique)
       storage: zustandStorage, // (optional) by default, 'localStorage' is used

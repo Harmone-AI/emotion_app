@@ -43,7 +43,6 @@ export default function SignInScreen({ navigation }: Props) {
   };
 
   const scaleSize = useScaleSize();
-  console.log(scaleSize(378));
   React.useEffect(() => {
     // GoogleSignin.configure({
     //   scopes: ['https://www.googleapis.com/auth/drive.readonly'],
@@ -87,7 +86,6 @@ export default function SignInScreen({ navigation }: Props) {
                 provider: "apple",
                 token: credential.identityToken,
               });
-              console.log(JSON.stringify({ error, user, credential }));
               if (!error) {
                 navigation.replace("Home");
               }
@@ -95,7 +93,7 @@ export default function SignInScreen({ navigation }: Props) {
               throw new Error("No identityToken.");
             }
           } catch (e) {
-            console.log("e", e);
+            console.error("Error AppleAuthentication", e);
             if (e.code === "ERR_REQUEST_CANCELED") {
               // handle that the user canceled the sign-in flow
             } else {

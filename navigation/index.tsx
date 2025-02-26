@@ -44,7 +44,7 @@ export default function Navigation() {
         SplashScreen.hideAsync();
       }, 200);
     } catch (error) {
-      console.log("initBySession", error);
+      console.error("Error initBySession", error);
       setInitialRouteName("SignIn");
     }
   }, []);

@@ -51,13 +51,17 @@ export default function HomeScreen({ navigation }: any) {
   useSpeechRecognitionEvent("end", () => setRecognizing(false));
   useSpeechRecognitionEvent("result", (event) => {
     if (event.isFinal) {
-      console.log("result====", event.results[0].transcript);
       done(event.results[0]?.transcript);
     }
   });
   useSpeechRecognitionEvent("error", (event) => {
     if (recording !== 2) {
-      console.log("error code:", event.error, "error message:", event.message);
+      console.error(
+        "error code:",
+        event.error,
+        "error message:",
+        event.message
+      );
     }
     setRecording(0);
   });
@@ -430,7 +434,6 @@ export default function HomeScreen({ navigation }: any) {
               ) : (
                 <Animated.View
                   onTouchStart={(event) => {
-                    console.log("onTouchStart");
                     event.stopPropagation();
                     setRecording(1);
                     handleStart();
@@ -440,9 +443,6 @@ export default function HomeScreen({ navigation }: any) {
                     };
                   }}
                   onTouchMove={(event) => {
-                    console.log(
-                      event.nativeEvent.locationY - tapStartLocation.current.y
-                    );
                     if (
                       event.nativeEvent.locationY - tapStartLocation.current.y <
                       -5
@@ -453,12 +453,10 @@ export default function HomeScreen({ navigation }: any) {
                     }
                   }}
                   onTouchCancel={(event) => {
-                    console.log("onTouchCancel");
                     setRecording(0);
                     ExpoSpeechRecognitionModule.abort();
                   }}
                   onTouchEnd={() => {
-                    console.log("ontouchend");
                     setRecording(0);
                     if (recording === 2) {
                       ExpoSpeechRecognitionModule.abort();

@@ -9,12 +9,16 @@ import {
   Animated,
   useAnimatedValue,
   Share as PlatformShare,
+  KeyboardAvoidingView,
+  Platform,
+  PixelRatio,
+  Image as ReactImage,
 } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import React from "react";
 import AppButton from "@/components/AppButton";
 import { useNavigation } from "@react-navigation/native";
@@ -30,6 +34,8 @@ import { SharedValue } from "react-native-reanimated";
 import TaskItem from "./TaskItem";
 import { useQuestStore } from "@/hooks/zustand/quest";
 import Share, { Social } from "react-native-share";
+import AppLoading from "@/components/Loading";
+import ViewShot, { captureRef } from "react-native-view-shot";
 
 export default function TaskScreen() {
   const scaleSize = useScaleSize();
@@ -63,27 +69,31 @@ export default function TaskScreen() {
   }, []);
 
   React.useEffect(() => {
+    console.log(
+      "unFinishTaskIds",
+      unFinishTaskIds.length,
+      unFinishTaskIds.length
+    );
     if (unFinishTaskCount.current !== 0 && unFinishTaskIds.length === 0) {
       startDoneAnimation();
+      setFolderFinishedTasks(true);
     }
   }, [startDoneAnimation, unFinishTaskIds]);
-  React.useEffect(() => {
-    Animated.timing(backgroundScale, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-    // console.log("backgroundScale", backgroundScale);
-  }, []);
   const [readyToShare, setReadyToShare] = React.useState(false);
+  const sharedImageUri = useRef("");
   const share = React.useCallback(() => {
     setReadyToShare(true);
   }, []);
+  React.useEffect(() => {
+    if (!readyToShare) {
+      return;
+    }
+    console.log("readyToShare", readyToShare);
+  }, [readyToShare]);
   const safeBottom = useSafeBottom();
   const header = (
     <View>
-      <Image
-        contentFit="contain"
+      <ReactImage
         style={{
           width: scaleSize(118),
           height: scaleSize(118),
@@ -91,6 +101,7 @@ export default function TaskScreen() {
           marginTop: scaleSize(30),
         }}
         source={{ uri: quest.begin_img }}
+        resizeMode="contain"
       />
       <HBase
         style={{
@@ -175,14 +186,16 @@ export default function TaskScreen() {
             top: scaleSize(-12),
           }}
         >
-          <Image
-            source={require("./goal.svg")}
+          <ReactImage
+            source={require("./goal.png")}
             style={{ width: scaleSize(20), height: scaleSize(20) }}
+            resizeMode="contain"
           />
         </View>
       </View>
     </View>
   );
+  const [loading, setLoading] = useState(false);
   return (
     <View
       style={{
@@ -208,24 +221,29 @@ export default function TaskScreen() {
         }}
         scrollEnabled={false}
       >
-        <ScrollView>
-          <Animated.View
-            style={{
-              backgroundColor: "#F29762",
-              borderRadius: scaleSize(800),
-              width: scaleSize(800),
-              height: scaleSize(800),
-              top: scaleSize(-450),
-              alignSelf: "center",
-              position: "absolute",
-              transform: [
-                {
-                  scale: backgroundScale,
-                },
-              ],
-            }}
-          >
-            {/* <View
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={"position"}
+          keyboardVerticalOffset={20}
+        >
+          <ScrollView contentContainerStyle={{ paddingBottom: scaleSize(16) }}>
+            <Animated.View
+              style={{
+                backgroundColor: "#F29762",
+                borderRadius: scaleSize(800),
+                width: scaleSize(800),
+                height: scaleSize(800),
+                top: scaleSize(-450),
+                alignSelf: "center",
+                position: "absolute",
+                transform: [
+                  {
+                    scale: backgroundScale,
+                  },
+                ],
+              }}
+            >
+              {/* <View
             style={{
               width: scaleSize(370),
               height: scaleSize(400),
@@ -234,61 +252,67 @@ export default function TaskScreen() {
               borderTopRightRadius: scaleSize(24),
             }}
           ></View> */}
-          </Animated.View>
-          {header}
-          <GestureHandlerRootView style={{ flex: 1, marginTop: scaleSize(40) }}>
-            {unFinishTaskIds?.map((id, index) => {
-              const task = tasks?.[Number(id)];
-              if (task.status !== 0) {
-                return null;
-              }
-              return <TaskItem key={id} id={Number(id)} task={task!} />;
-            })}
-          </GestureHandlerRootView>
-          {finishTaskIds.length > 0 && (
-            <AppButton
-              onPress={() => {
-                setFolderFinishedTasks((s) => !s);
-              }}
-              style={{
-                flexDirection: "row",
-                marginTop: scaleSize(24),
-                marginBottom: scaleSize(16),
-                alignItems: "center",
-                alignSelf: "center",
-              }}
+            </Animated.View>
+            {header}
+
+            <GestureHandlerRootView
+              style={{ flex: 1, marginTop: scaleSize(40) }}
             >
-              <HBase
+              {unFinishTaskIds?.map((id, index) => {
+                const task = tasks?.[Number(id)];
+                if (task.status !== 0) {
+                  return null;
+                }
+                return <TaskItem key={id} id={Number(id)} task={task!} />;
+              })}
+            </GestureHandlerRootView>
+            {finishTaskIds.length > 0 && (
+              <AppButton
+                onPress={() => {
+                  setFolderFinishedTasks((s) => !s);
+                }}
                 style={{
-                  fontSize: scaleSize(12),
-                  fontWeight: "800",
-                  color: "rgba(0, 0, 0, 0.25)",
-                  textAlign: "left",
+                  flexDirection: "row",
+                  marginTop: scaleSize(24),
+                  marginBottom: scaleSize(16),
+                  alignItems: "center",
+                  alignSelf: "center",
                 }}
               >
-                {folderFinishedTasks
-                  ? `Completed ${finishTaskIds.length} goals`
-                  : "Fold up completed goals"}
-              </HBase>
-              <Image
-                source={require("./arrow.svg")}
-                style={{
-                  width: scaleSize(7),
-                  height: scaleSize(4),
-                  marginLeft: scaleSize(6),
-                  transform: [
-                    { rotate: folderFinishedTasks ? "0deg" : "180deg" },
-                  ],
-                }}
-              />
-            </AppButton>
-          )}
-          {!folderFinishedTasks &&
-            finishTaskIds?.map((id, index) => {
-              const task = tasks?.[Number(id)];
-              return <TaskItem key={id} id={Number(id)} task={task!} />;
-            })}
-        </ScrollView>
+                <HBase
+                  style={{
+                    fontSize: scaleSize(12),
+                    fontWeight: "800",
+                    color: "rgba(0, 0, 0, 0.25)",
+                    textAlign: "left",
+                  }}
+                >
+                  {folderFinishedTasks
+                    ? `Completed ${finishTaskIds.length} goals`
+                    : "Fold up completed goals"}
+                </HBase>
+                <Image
+                  source={require("./arrow.svg")}
+                  style={{
+                    width: scaleSize(7),
+                    height: scaleSize(4),
+                    marginLeft: scaleSize(6),
+                    transform: [
+                      { rotate: folderFinishedTasks ? "0deg" : "180deg" },
+                    ],
+                  }}
+                />
+              </AppButton>
+            )}
+
+            {!folderFinishedTasks &&
+              finishTaskIds?.map((id, index) => {
+                const task = tasks?.[Number(id)];
+                return <TaskItem key={id} id={Number(id)} task={task!} />;
+              })}
+            <View style={{ height: scaleSize(60), width: "100%" }} />
+          </ScrollView>
+        </KeyboardAvoidingView>
         <AppButton
           style={{
             backgroundColor: "#fff",
@@ -340,6 +364,7 @@ export default function TaskScreen() {
             />
           </AppButton>
         )}
+
         {unFinishTaskIds?.length > 0 && (
           <View
             style={{
@@ -352,8 +377,15 @@ export default function TaskScreen() {
           >
             {quest.confirmed ? (
               <AppButton
-                onPress={() => {
-                  addTask(quest.id, "");
+                onPress={async () => {
+                  try {
+                    setLoading(true);
+                    await addTask(quest.id, "");
+                  } catch (e) {
+                    console.error("Error addTask:", e);
+                  } finally {
+                    setLoading(false);
+                  }
                 }}
                 style={{
                   shadowColor: "#cf620c",
@@ -370,8 +402,32 @@ export default function TaskScreen() {
                   height: scaleSize(40),
                   justifyContent: "center",
                   alignItems: "center",
+                  flexDirection: "row",
                 }}
               >
+                {loading ? (
+                  <AppLoading
+                    color="#fff"
+                    width={scaleSize(24)}
+                    height={scaleSize(24)}
+                  />
+                ) : (
+                  <HBase
+                    style={{
+                      fontSize: scaleSize(15),
+                      lineHeight: scaleSize(15),
+                      textTransform: "uppercase",
+                      fontWeight: "700",
+                      color: "#fff",
+                      textAlign: "right",
+                      textAlignVertical: "center",
+                      alignSelf: "center",
+                      width: scaleSize(24),
+                    }}
+                  >
+                    +
+                  </HBase>
+                )}
                 <HBase
                   style={{
                     fontSize: scaleSize(15),
@@ -382,10 +438,12 @@ export default function TaskScreen() {
                     textAlign: "left",
                     textAlignVertical: "center",
                     alignSelf: "center",
-                    marginTop: scaleSize(4),
+                    marginTop: scaleSize(2),
+                    marginRight: scaleSize(10),
                   }}
                 >
-                  + Add goal
+                  {" "}
+                  Add goal
                 </HBase>
               </AppButton>
             ) : (
@@ -505,7 +563,15 @@ export default function TaskScreen() {
             alignItems: "center",
           }}
         >
-          <View
+          <ViewShot
+            onCapture={(result) => {
+              console.log("uri", result);
+              sharedImageUri.current = "data:image/png;base64," + result;
+            }}
+            captureMode="mount"
+            options={{
+              result: "base64",
+            }}
             style={{
               width: scaleSize(370),
               height: scaleSize(507),
@@ -516,48 +582,59 @@ export default function TaskScreen() {
           >
             <View
               style={{
-                width: scaleSize(360),
-                height: scaleSize(418),
-                backgroundColor: "#F29762",
-                alignSelf: "center",
-                marginTop: scaleSize(5),
-                borderRadius: scaleSize(20),
-              }}
-            >
-              {header}
-            </View>
-            <View
-              style={{
-                flex: 1,
-                flexDirection: "row",
+                width: scaleSize(370),
+                height: scaleSize(507),
+                backgroundColor: "#fff",
+                borderRadius: scaleSize(24),
                 alignItems: "center",
-                // backgroundColor: "red",
-                paddingHorizontal: scaleSize(15),
               }}
             >
               <View
                 style={{
-                  width: scaleSize(50),
-                  height: scaleSize(50),
-                  marginRight: scaleSize(12),
-                  backgroundColor: "#FF7A2D",
-                  justifyContent: "center",
-                  alignItems: "center",
+                  width: scaleSize(360),
+                  height: scaleSize(418),
+                  backgroundColor: "#F29762",
+                  alignSelf: "center",
+                  marginTop: scaleSize(5),
+                  borderRadius: scaleSize(20),
                 }}
               >
-                <Image
-                  source={{ uri: quest.begin_img }}
-                  style={{ width: scaleSize(34), height: scaleSize(34) }}
-                  contentFit="contain"
+                {header}
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  // backgroundColor: "red",
+                  paddingHorizontal: scaleSize(15),
+                }}
+              >
+                <View
+                  style={{
+                    width: scaleSize(50),
+                    height: scaleSize(50),
+                    marginRight: scaleSize(12),
+                    backgroundColor: "#FF7A2D",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <ReactImage
+                    source={{ uri: quest.begin_img }}
+                    style={{ width: scaleSize(34), height: scaleSize(34) }}
+                    resizeMode="contain"
+                  />
+                </View>
+                <HBase style={{ flex: 1 }}>{quest.quest_title}</HBase>
+                <ReactImage
+                  source={require("@/assets/images/qr_test.png")}
+                  style={{ width: scaleSize(50), height: scaleSize(50) }}
+                  resizeMode="contain"
                 />
               </View>
-              <HBase style={{ flex: 1 }}>{quest.quest_title}</HBase>
-              <Image
-                source={require("@/assets/images/qr_test.png")}
-                style={{ width: scaleSize(50), height: scaleSize(50) }}
-              />
             </View>
-          </View>
+          </ViewShot>
           <AppButton
             style={{
               width: scaleSize(60),
@@ -648,7 +725,10 @@ export default function TaskScreen() {
             </AppButton>
             <AppButton
               onPress={() => {
-                PlatformShare.share(require("./test.json"));
+                PlatformShare.share({
+                  url: sharedImageUri.current,
+                  message: "",
+                });
               }}
             >
               <Image
