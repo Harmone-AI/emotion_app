@@ -24,6 +24,7 @@ import { useScaleSize } from "@/hooks/useScreen";
 import { supabase } from "@/hooks/supabase";
 import * as SplashScreen from "expo-splash-screen";
 import KeyboardInputTargetScreen from "@/screens/tabs/home/KeyboardInputTarget";
+import TestScreen from "@/screens/TestScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator<DrawerParamList>();
@@ -145,6 +146,7 @@ export default function Navigation() {
                 headerShadowVisible: false,
               }}
             />
+            <Stack.Screen name="test" component={TestScreen} options={{}} />
           </Stack.Group>
         </>
         {/* )} */}

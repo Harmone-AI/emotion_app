@@ -42,6 +42,8 @@ export default function TaskScreen() {
   const navigation = useNavigation();
   const quest = useQuestStore((state) => state.questMap[state.latestQuestId]);
   const addTask = useQuestStore((state) => state.addTask);
+  const post = useQuestStore((state) => state.post);
+  const latestUserInput = useQuestStore((state) => state.latestUserInput);
   const confirm = useQuestStore((state) => state.confirm);
   const taskIds = quest?.taskids.split(",");
   const tasks = useQuestStore((state) => state.taskMap);
@@ -67,13 +69,7 @@ export default function TaskScreen() {
       useNativeDriver: true,
     }).start();
   }, []);
-
   React.useEffect(() => {
-    console.log(
-      "unFinishTaskIds",
-      unFinishTaskIds.length,
-      unFinishTaskIds.length
-    );
     if (unFinishTaskCount.current !== 0 && unFinishTaskIds.length === 0) {
       startDoneAnimation();
       setFolderFinishedTasks(true);
@@ -263,11 +259,22 @@ export default function TaskScreen() {
                 if (task.status !== 0) {
                   return null;
                 }
-                return <TaskItem key={id} id={Number(id)} task={task!} />;
+                return (
+                  <TaskItem
+                    key={id}
+                    id={Number(id)}
+                    task={task!}
+                    questId={quest.id}
+                    isFinalTask={
+                      unFinishTaskIds.length === 1 && task.status === 0
+                    }
+                  />
+                );
               })}
             </GestureHandlerRootView>
             {finishTaskIds.length > 0 && (
               <AppButton
+                disabled={loading}
                 onPress={() => {
                   setFolderFinishedTasks((s) => !s);
                 }}
@@ -308,12 +315,21 @@ export default function TaskScreen() {
             {!folderFinishedTasks &&
               finishTaskIds?.map((id, index) => {
                 const task = tasks?.[Number(id)];
-                return <TaskItem key={id} id={Number(id)} task={task!} />;
+                return (
+                  <TaskItem
+                    key={id}
+                    id={Number(id)}
+                    task={task!}
+                    questId={quest.id}
+                    isFinalTask={false}
+                  />
+                );
               })}
             <View style={{ height: scaleSize(60), width: "100%" }} />
           </ScrollView>
         </KeyboardAvoidingView>
         <AppButton
+          disabled={loading}
           style={{
             backgroundColor: "#fff",
             borderRadius: scaleSize(40),
@@ -340,6 +356,7 @@ export default function TaskScreen() {
         </AppButton>
         {unFinishTaskIds.length === 0 && (
           <AppButton
+            disabled={loading}
             style={{
               backgroundColor: "#fff",
               borderRadius: scaleSize(40),
@@ -377,6 +394,7 @@ export default function TaskScreen() {
           >
             {quest.confirmed ? (
               <AppButton
+                disabled={loading}
                 onPress={async () => {
                   try {
                     setLoading(true);
@@ -449,6 +467,7 @@ export default function TaskScreen() {
             ) : (
               <>
                 <AppButton
+                  disabled={loading}
                   style={{
                     shadowColor: "#b49300",
                     shadowOffset: {
@@ -465,21 +484,36 @@ export default function TaskScreen() {
                     justifyContent: "center",
                     alignItems: "center",
                   }}
+                  onPress={async () => {
+                    try {
+                      setLoading(true);
+                      await post(latestUserInput);
+                    } catch (e) {
+                      console.error(e);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
                 >
-                  <HBase
-                    style={{
-                      fontSize: scaleSize(15),
-                      textTransform: "uppercase",
-                      fontWeight: "700",
-                      fontFamily: "SF Pro Rounded",
-                      color: "#53270d",
-                      textAlign: "left",
-                    }}
-                  >
-                    Regenerate
-                  </HBase>
+                  {loading ? (
+                    <AppLoading />
+                  ) : (
+                    <HBase
+                      style={{
+                        fontSize: scaleSize(15),
+                        textTransform: "uppercase",
+                        fontWeight: "700",
+                        fontFamily: "SF Pro Rounded",
+                        color: "#53270d",
+                        textAlign: "left",
+                      }}
+                    >
+                      Regenerate
+                    </HBase>
+                  )}
                 </AppButton>
                 <AppButton
+                  disabled={loading}
                   style={{
                     marginLeft: scaleSize(8),
                     shadowColor: "#b49300",
@@ -520,6 +554,7 @@ export default function TaskScreen() {
         )}
         {unFinishTaskIds?.length === 0 && (
           <AppButton
+            disabled={loading}
             style={{
               padding: scaleSize(12),
               alignItems: "center",
@@ -565,7 +600,6 @@ export default function TaskScreen() {
         >
           <ViewShot
             onCapture={(result) => {
-              console.log("uri", result);
               sharedImageUri.current = "data:image/png;base64," + result;
             }}
             captureMode="mount"
@@ -628,7 +662,7 @@ export default function TaskScreen() {
                 </View>
                 <HBase style={{ flex: 1 }}>{quest.quest_title}</HBase>
                 <ReactImage
-                  source={require("@/assets/images/qr_test.png")}
+                  source={require("@/assets/images/qr.png")}
                   style={{ width: scaleSize(50), height: scaleSize(50) }}
                   resizeMode="contain"
                 />

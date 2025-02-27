@@ -22,6 +22,8 @@ import { Image } from "expo-image";
 import { useQuestStore } from "@/hooks/zustand/quest";
 import AppButton from "@/components/AppButton";
 import AppLoading from "@/components/Loading";
+import { useToastStore } from "@/hooks/zustand/toast";
+import { useCharacterStore } from "@/hooks/zustand/character";
 
 const styles = StyleSheet.create({
   leftAction: {
@@ -160,185 +162,229 @@ const renderRightActions = (
   </View>
 );
 
-export default React.memo(({ id, task }: { id: number; task: Task }) => {
-  const scaleSize = useScaleSize();
-  const inputRef = React.useRef<TextInput>(null);
-  const [editing, setEditing] = React.useState(false);
-  useEffect(() => {
-    if (editing) {
-      inputRef.current?.focus();
-    } else {
-      inputRef.current?.blur();
-    }
-  }, [editing]);
-  useEffect(() => {
-    const emitterSubscription = Keyboard.addListener("keyboardWillHide", () => {
-      setEditing(false);
-    });
-    return () => {
-      emitterSubscription.remove();
-    };
-  }, []);
-  const deleteTask = useQuestStore((state) => state.deleteTask);
-  const finishTask = useQuestStore((state) => state.finishTask);
-  const contentRef = React.useRef<string>(task?.content);
-  const [loading, setLoading] = React.useState(false);
-  const patchTask = useQuestStore((state) => state.patchTask);
-  return (
-    <View
-      key={id}
-      style={{
-        marginBottom: scaleSize(4),
-        alignSelf: "center",
-        // height: scaleSize(62),
-        justifyContent: "center",
-      }}
-    >
-      <Swipeable
+export default React.memo(
+  ({
+    id,
+    task,
+    isFinalTask,
+    questId,
+  }: {
+    id: number;
+    task: Task;
+    isFinalTask: boolean;
+    questId: number;
+  }) => {
+    const scaleSize = useScaleSize();
+    const inputRef = React.useRef<TextInput>(null);
+    const [editing, setEditing] = React.useState(false);
+    useEffect(() => {
+      if (editing) {
+        inputRef.current?.focus();
+      } else {
+        inputRef.current?.blur();
+      }
+    }, [editing]);
+    useEffect(() => {
+      const emitterSubscription = Keyboard.addListener(
+        "keyboardWillHide",
+        () => {
+          setEditing(false);
+        }
+      );
+      return () => {
+        emitterSubscription.remove();
+      };
+    }, []);
+    const deleteTask = useQuestStore((state) => state.deleteTask);
+    const finishTask = useQuestStore((state) => state.finishTask);
+    const finishAllTask = useQuestStore((state) => state.finishAllTask);
+    const contentRef = React.useRef<string>(task?.content);
+    const [loading, setLoading] = React.useState(false);
+    const patchTask = useQuestStore((state) => state.patchTask);
+    const show = useToastStore((state) => state.show);
+    const getCharacter = useCharacterStore((state) => state.get);
+    return (
+      <View
         key={id}
-        // containerStyle={{ overflow: "visible" }}
-        friction={2}
-        enableTrackpadTwoFingerGesture
-        rightThreshold={0}
-        // renderRightActions={RightAction}
-        renderRightActions={(
-          progressAnimatedValue: SharedValue<number>,
-          dragAnimatedValue: SharedValue<number>,
-          swipeable: SwipeableMethods
-        ) => {
-          return renderRightActions(
-            progressAnimatedValue,
-            dragAnimatedValue,
-            swipeable,
-            () => {
-              swipeable.close();
-              setTimeout(() => {
-                setEditing(true);
-              }, 300);
-            },
-            async () => {
-              try {
-                setLoading(true);
-                swipeable.close();
-                await deleteTask(id);
-              } catch (e) {
-                console.error("Error deleteTask:", e);
-              } finally {
-                setLoading(false);
-              }
-            }
-          );
-          // return RightAction(
-          //   progressAnimatedValue,
-          //   dragAnimatedValue,
-          //   swipeable,
-          //   () => {
-          //     swipeable.close();
-          //     setTimeout(() => {
-          //       setEditing(true);
-          //     }, 300);
-          //   },
-          //   () => {
-          //     swipeable.close();
-          //   }
-          // );
+        style={{
+          marginBottom: scaleSize(4),
+          alignSelf: "center",
+          // height: scaleSize(62),
+          justifyContent: "center",
         }}
       >
-        <View
+        <Swipeable
           key={id}
-          style={{
-            marginVertical: scaleSize(3),
-            width: scaleSize(338),
-            minHeight: scaleSize(56),
-            maxHeight: scaleSize(256),
-            flexDirection: "row",
-            alignItems: "center",
-            paddingLeft: scaleSize(12),
-            paddingRight: scaleSize(12),
-            backgroundColor: "#fff",
-
-            borderColor: "#e5e5e5",
-            borderWidth: scaleSize(1),
-            borderRadius: scaleSize(12),
-
-            shadowColor: "#e5e5e5",
-            shadowOffset: {
-              width: 0,
-              height: 3,
-            },
-            shadowRadius: 0,
-            elevation: 0,
-            shadowOpacity: 1,
-          }}
-        >
-          <TextInput
-            ref={inputRef}
-            editable={!loading && (editing || !task?.content)}
-            style={{
-              fontSize: scaleSize(14),
-              lineHeight: scaleSize(20),
-              textTransform: "capitalize",
-              fontWeight: "700",
-              color: "#333",
-              textAlign: "left",
-              flex: 1,
-              textAlignVertical: "center",
-              paddingTop: scaleSize(10),
-              paddingBottom: scaleSize(10),
-            }}
-            numberOfLines={4}
-            multiline={true}
-            defaultValue={task?.content}
-            onChangeText={(text) => {
-              contentRef.current = text;
-            }}
-            autoFocus={!task?.content}
-            onBlur={async () => {
-              if (contentRef.current !== task?.content) {
+          // containerStyle={{ overflow: "visible" }}
+          friction={2}
+          enableTrackpadTwoFingerGesture
+          rightThreshold={0}
+          // renderRightActions={RightAction}
+          renderRightActions={(
+            progressAnimatedValue: SharedValue<number>,
+            dragAnimatedValue: SharedValue<number>,
+            swipeable: SwipeableMethods
+          ) => {
+            return renderRightActions(
+              progressAnimatedValue,
+              dragAnimatedValue,
+              swipeable,
+              () => {
+                swipeable.close();
+                setTimeout(() => {
+                  setEditing(true);
+                }, 300);
+              },
+              async () => {
                 try {
                   setLoading(true);
-                  await patchTask(task?.task_id!, {
-                    content: contentRef.current,
+                  swipeable.close();
+                  const undo = await deleteTask(id);
+                  show({
+                    message: "Deleted",
+                    action: () => {
+                      undo();
+                    },
+                    actionText: "Undo",
+                    timeout: 3000,
                   });
-                } catch (error) {
-                  console.error("Error patchTask:", error);
+                } catch (e) {
+                  console.error("Error deleteTask:", e);
                 } finally {
                   setLoading(false);
                 }
               }
+            );
+            // return RightAction(
+            //   progressAnimatedValue,
+            //   dragAnimatedValue,
+            //   swipeable,
+            //   () => {
+            //     swipeable.close();
+            //     setTimeout(() => {
+            //       setEditing(true);
+            //     }, 300);
+            //   },
+            //   () => {
+            //     swipeable.close();
+            //   }
+            // );
+          }}
+        >
+          <View
+            key={id}
+            style={{
+              marginVertical: scaleSize(3),
+              width: scaleSize(338),
+              minHeight: scaleSize(56),
+              maxHeight: scaleSize(256),
+              flexDirection: "row",
+              alignItems: "center",
+              paddingLeft: scaleSize(12),
+              paddingRight: scaleSize(12),
+              backgroundColor: "#fff",
+
+              borderColor: "#e5e5e5",
+              borderWidth: scaleSize(1),
+              borderRadius: scaleSize(12),
+
+              shadowColor: "#e5e5e5",
+              shadowOffset: {
+                width: 0,
+                height: 3,
+              },
+              shadowRadius: 0,
+              elevation: 0,
+              shadowOpacity: 1,
             }}
-          />
-          {loading ? (
-            <AppLoading width={scaleSize(32)} height={scaleSize(32)} />
-          ) : (
-            <AppButton
-              style={[
-                {
-                  borderColor: "#e0e0e0",
-                  borderRadius: scaleSize(32),
-                  borderWidth: scaleSize(2),
-                  width: scaleSize(32),
-                  height: scaleSize(32),
-                  justifyContent: "center",
-                  alignItems: "center",
-                },
-                task.status === 1 && {
-                  backgroundColor: "#27AE60",
-                  borderWidth: 0,
-                },
-              ]}
-              onPress={() => {
-                finishTask(task?.task_id);
+          >
+            <TextInput
+              ref={inputRef}
+              editable={!loading && (editing || !task?.content)}
+              style={{
+                fontSize: scaleSize(14),
+                lineHeight: scaleSize(20),
+                textTransform: "capitalize",
+                fontWeight: "700",
+                color: "#333",
+                textAlign: "left",
+                flex: 1,
+                textAlignVertical: "center",
+                paddingTop: scaleSize(10),
+                paddingBottom: scaleSize(10),
               }}
-            >
-              <Image
-                source={require("../checkmark.svg")}
-                style={{ width: scaleSize(24), height: scaleSize(24) }}
-              />
-            </AppButton>
-          )}
-        </View>
-      </Swipeable>
-    </View>
-  );
-});
+              numberOfLines={4}
+              multiline={true}
+              defaultValue={task?.content}
+              onChangeText={(text) => {
+                contentRef.current = text;
+              }}
+              autoFocus={!task?.content}
+              returnKeyType="done"
+              onSubmitEditing={() => {
+                inputRef.current?.blur();
+              }}
+              onBlur={async () => {
+                if (contentRef.current !== task?.content) {
+                  try {
+                    setLoading(true);
+                    await patchTask(task?.task_id!, {
+                      content: contentRef.current,
+                    });
+                  } catch (error) {
+                    console.error("Error patchTask:", error);
+                  } finally {
+                    setLoading(false);
+                  }
+                }
+              }}
+            />
+            {loading ? (
+              <AppLoading width={scaleSize(32)} height={scaleSize(32)} />
+            ) : (
+              <AppButton
+                style={[
+                  {
+                    borderColor: "#e0e0e0",
+                    borderRadius: scaleSize(32),
+                    borderWidth: scaleSize(2),
+                    width: scaleSize(32),
+                    height: scaleSize(32),
+                    justifyContent: "center",
+                    alignItems: "center",
+                  },
+                  task.status === 1 && {
+                    backgroundColor: "#27AE60",
+                    borderWidth: 0,
+                  },
+                ]}
+                onPress={async () => {
+                  try {
+                    setLoading(true);
+                    if (isFinalTask) {
+                      await finishAllTask(questId);
+                      await getCharacter();
+                    }
+                    finishTask(task?.task_id);
+                  } catch (error) {
+                    show({
+                      message: "The internet connection appears to be offline.",
+                    });
+                    console.error("Error finishTask:", error);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                <Image
+                  source={require("../checkmark.svg")}
+                  style={{ width: scaleSize(24), height: scaleSize(24) }}
+                />
+              </AppButton>
+            )}
+          </View>
+        </Swipeable>
+      </View>
+    );
+  }
+);

@@ -1,12 +1,16 @@
+import { Quest } from "@/api/api";
 import AppButton from "@/components/AppButton";
 import { HBase } from "@/components/HBase";
 import Page from "@/components/Page";
 import { useScaleSize } from "@/hooks/useScreen";
+import { useQuestStore } from "@/hooks/zustand/quest";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { Portal } from "@gorhom/portal";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Image } from "expo-image";
+import React from "react";
 import { useCallback, useRef, useState } from "react";
 import {
   Keyboard,
@@ -16,7 +20,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-  Image,
   Animated,
   StyleSheet,
 } from "react-native";
@@ -77,13 +80,46 @@ export default function Tasks({ navigation, onClose }: any) {
 
   const scaleSize = useScaleSize();
 
+  const questMap = useQuestStore((state) => state.questMap);
+  const questsByDate = React.useMemo(() => {
+    const newQuestsArray: Quest[][] = [[]];
+    const sortedKeys = Object.keys(questMap)
+      .sort((a, b) => (Number(a) > Number(b) ? -1 : 1))
+      .forEach((key) => {
+        const quest = questMap[key];
+        if (
+          newQuestsArray[newQuestsArray.length - 1]?.[0]?.created_at ===
+          quest.created_at
+        ) {
+          newQuestsArray[newQuestsArray.length - 1].push(quest);
+        } else {
+          newQuestsArray.push([quest]);
+        }
+      });
+    return newQuestsArray;
+  }, [questMap]);
+  const get = useQuestStore((state) => state.get);
+  React.useEffect(() => {
+    get();
+  }, []);
+
   return (
     <Page
-      contentContainerStyle={{
-        paddingVertical: scaleSize(20),
+      contentContainerStyle={
+        {
+          // paddingVertical: scaleSize(20),
+        }
+      }
+      safeAreaProps={{
+        edges: ["bottom"],
       }}
     >
-      {list.map((item, dateIndex) => {
+      {questsByDate.map((dateArray, dateIndex) => {
+        if (!dateArray[0]) {
+          return null;
+        }
+        const dateString = dateArray[0].created_at;
+        const list = dateArray;
         return (
           <View
             key={dateIndex}
@@ -101,16 +137,16 @@ export default function Tasks({ navigation, onClose }: any) {
                 fontWeight: "700",
               }}
             >
-              {item.date}
+              {dateString}
             </HBase>
             <View
               style={{
                 flexDirection: "row",
                 flexWrap: "wrap",
-                alignSelf: "center",
+                // alignSelf: "center",
               }}
             >
-              {item.list.map((item, taskIndex) => {
+              {list.map((quest, taskIndex) => {
                 return (
                   <AppButton
                     key={taskIndex}
@@ -143,11 +179,11 @@ export default function Tasks({ navigation, onClose }: any) {
                     >
                       <Image
                         style={{
-                          width: 91,
+                          width: 122,
                           height: 122,
                         }}
-                        resizeMode="cover"
-                        source={require("./head.png")}
+                        contentFit="contain"
+                        source={{ uri: quest.begin_img }}
                       />
                     </View>
                     <Text
@@ -165,7 +201,7 @@ export default function Tasks({ navigation, onClose }: any) {
                         styles.textTypo,
                       ]}
                     >
-                      Daily Earnings Plan
+                      {quest.quest_title}
                     </Text>
                     <View style={styles.wrapper}>
                       <Text style={[styles.text, styles.textTypo]}>03.06</Text>

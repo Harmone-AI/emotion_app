@@ -15,6 +15,7 @@ import {
   initialWindowMetrics,
   SafeAreaProvider,
 } from "react-native-safe-area-context";
+import Toast from "./components/Toast";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -55,6 +56,7 @@ export default function App() {
           > */}
           <BottomSheetModalProvider>
             <Navigation />
+            <Toast />
           </BottomSheetModalProvider>
           {/* </SafeAreaProvider> */}
         </PortalProvider>

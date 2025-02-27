@@ -76,6 +76,27 @@ export async function patch_task(
 }
 
 export async function quests(): Promise<Quest[]> {
-  let res = await http<Quest[]>("/user/1/task_lists/", {}, "GET");
+  let res = await http<Quest[]>("/user/1/task_lists", {}, "GET");
+  return res;
+}
+
+export type Character = {
+  status: string;
+  remaining_seconds: number;
+};
+
+export async function complete_all_task(
+  questId: number
+): Promise<Partial<Quest>> {
+  let res = await http<Partial<Quest>>(
+    "/complete_tasklist/" + questId,
+    {},
+    "POST"
+  );
+  return res;
+}
+
+export async function character(): Promise<Character> {
+  let res = await http<Character>("/check_countdown/1", {}, "GET");
   return res;
 }

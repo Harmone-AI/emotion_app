@@ -5,21 +5,24 @@ import storage, { zustandStorage } from "../storage";
 import { immer } from "zustand/middleware/immer";
 
 interface QuestState {
+  latestUserInput: string;
   latestQuestId: number;
   questMap: { [index: string | "latest"]: api.Quest };
   taskMap: { [index: string]: api.Task };
   post: (userInput: string) => Promise<void>;
   confirm: (taskId: number) => Promise<void>;
-  deleteTask: (taskId: number) => Promise<void>;
+  deleteTask: (taskId: number) => Promise<() => void>;
   finishTask: (taskId: number) => Promise<void>;
   addTask: (questId: number, content: string) => Promise<void>;
   patchTask: (taskId: number, params: Partial<api.Task>) => Promise<void>;
   get: () => Promise<void>;
+  finishAllTask: (questId: number) => Promise<void>;
 }
 
 export const useQuestStore = create<QuestState>()(
   persist(
     immer((set, get) => ({
+      latestUserInput: "",
       latestQuestId: 0,
       questMap: {},
       taskMap: {},
@@ -38,12 +41,10 @@ export const useQuestStore = create<QuestState>()(
           })
         );
         set((state) => {
-          return {
-            ...state,
-            questMap: { ...state.questMap, [res.id]: res },
-            taskMap: { ...state.taskMap, ...tasks },
-            latestQuestId: res.id,
-          };
+          state.latestUserInput = userInput;
+          state.latestQuestId = res.id;
+          state.questMap[res.id] = res;
+          state.taskMap = { ...state.taskMap, ...tasks };
         });
       },
       get: async () => {
@@ -76,19 +77,33 @@ export const useQuestStore = create<QuestState>()(
         });
       },
       deleteTask: async (taskId: number) => {
-        await api.delete_task(taskId);
+        const oldQuestMap = get().questMap;
+        const oldTaskMap = get().taskMap;
+        const questId = Object.keys(get().questMap).find((key) => {
+          return get()
+            .questMap[key].taskids.split(",")
+            .includes(taskId.toString());
+        })!;
+        const oldTaskIds = get().questMap[questId].taskids;
+        const oldTask = get().taskMap[taskId];
         set((state) => {
-          const questId = Object.keys(state.questMap).find((key) => {
-            return state.questMap[key].taskids
-              .split(",")
-              .includes(taskId.toString());
-          })!;
           state.questMap[questId].taskids = state.questMap[questId].taskids
             .split(",")
             .filter((item) => item !== taskId.toString())
             .join(",");
           delete state.taskMap[taskId];
         });
+        const timer = setTimeout(() => {
+          api.delete_task(taskId);
+        }, 3000);
+        return () => {
+          console.log("undo");
+          set((state) => {
+            state.questMap[questId].taskids = oldTaskIds;
+            state.taskMap[taskId] = oldTask;
+          });
+          clearTimeout(timer);
+        };
       },
       finishTask: async (taskId: number) => {
         set((state) => {
@@ -114,6 +129,12 @@ export const useQuestStore = create<QuestState>()(
         set((state) => {
           state.questMap[questId].taskids = newTaskIds.join(",");
           state.taskMap[task.task_id] = task;
+        });
+      },
+      finishAllTask: async (questId: number) => {
+        const quest = await api.complete_all_task(questId);
+        set((state) => {
+          state.questMap[questId] = { ...state.questMap[questId], ...quest };
         });
       },
     })),

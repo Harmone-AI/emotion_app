@@ -2,7 +2,6 @@ import { Image } from "expo-image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Keyboard,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -33,6 +32,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useQuestStore } from "@/hooks/zustand/quest";
 import { HBase } from "@/components/HBase";
 import React from "react";
+import { useCharacterStore } from "@/hooks/zustand/character";
+import Timer from "./Timer";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
@@ -122,373 +124,451 @@ export default function HomeScreen({ navigation }: any) {
     actionButtonSize / 2 + addButtonSize / 2 + addButtonActionsMargin
   );
   const tapStartLocation = React.useRef({ x: 0, y: 0 });
+  const returnHomeDuration = useCharacterStore(
+    (state) => state.returnHomeDuration
+  );
   return (
-    <SafeAreaView
-      onTouchStart={(event) => {
-        if (showRecording) {
-          setRecording(0);
-          setShowRecording(false);
-          rotationAnimatedValue.setValue(0);
-          clickAdd();
-        }
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#e8eff3",
       }}
-      style={{ flex: 1, backgroundColor: "#e8eff3", paddingTop: 10 }}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#e8eff3" />
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
+      <SafeAreaView
+        mode="margin"
+        onTouchStart={(event) => {
+          if (showRecording) {
+            setRecording(0);
+            setShowRecording(false);
+            rotationAnimatedValue.setValue(0);
+            clickAdd();
+          }
         }}
-      >
-        <AppButton
-          onPress={() => navigation.navigate("tasks")}
-          style={{ flexDirection: "row", alignItems: "center" }}
-        >
-          <View
-            style={{
-              marginLeft: scaleSize(16),
-              flexDirection: "row",
-              alignItems: "center",
-              borderTopRightRadius: 20,
-              borderBottomRightRadius: 20,
-            }}
-          >
-            <View
-              style={{
-                borderRadius: 10,
-                backgroundColor: "#fff",
-                borderStyle: "solid",
-                borderColor: "rgba(0, 0, 0, 0.1)",
-                borderWidth: 1,
-                width: scaleSize(56),
-                height: scaleSize(56),
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Image
-                source={require("@/screens/tasks/head.png")}
-                contentFit="contain"
-                style={{ width: scaleSize(46), height: scaleSize(46) }}
-              />
-            </View>
-            <Image
-              source={require("./more.svg")}
-              style={{
-                width: scaleSize(28),
-                height: scaleSize(28),
-                marginLeft: scaleSize(5),
-              }}
-            />
-          </View>
-        </AppButton>
-        <AppButton
-          style={{ marginRight: scaleSize(16) }}
-          onPress={() => {
-            navigation.navigate("stories");
-          }}
-        >
-          <Image
-            style={{ width: 48, height: 48, zIndex: 10 }}
-            source={require("@/assets/home/rili.png")}
-          ></Image>
-        </AppButton>
-      </View>
-      <View style={{ alignItems: "center" }}>
-        <Image style={{ width: 273, height: 371 }} source={animalImage}></Image>
-      </View>
-      <View style={{ flex: 1 }}></View>
-      {/* <AppLoading width={40} height={40} /> */}
-      <View
         style={{
+          flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          alignSelf: "center",
         }}
       >
+        <StatusBar barStyle="dark-content" backgroundColor="#e8eff3" />
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "space-between",
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
           }}
         >
-          <Animated.View
-            onTouchStart={(event) => {
-              clickInput();
-            }}
-            style={{
-              width: scaleSize(actionButtonSize),
-              height: scaleSize(actionButtonSize),
-              backgroundColor: "#fff",
-              borderRadius: 60,
-              alignItems: "center",
-              justifyContent: "center",
-              transform: [
-                {
-                  translateX: rotationAnimatedValue.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, actionsTranslateX],
-                  }),
-                },
-                {
-                  translateY: rotationAnimatedValue.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, actionsTranslateY],
-                  }),
-                },
-                {
-                  scale: rotationAnimatedValue.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, addButtonSize / actionButtonSize],
-                  }),
-                },
-              ],
-              opacity: rotationAnimatedValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0],
-              }),
+          <AppButton
+            onPress={() => navigation.navigate("tasks")}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
+            <View
+              style={{
+                marginLeft: scaleSize(16),
+                flexDirection: "row",
+                alignItems: "center",
+                borderTopRightRadius: 20,
+                borderBottomRightRadius: 20,
+              }}
+            >
+              <View
+                style={{
+                  borderRadius: 10,
+                  backgroundColor: "#fff",
+                  borderStyle: "solid",
+                  borderColor: "rgba(0, 0, 0, 0.1)",
+                  borderWidth: 1,
+                  width: scaleSize(56),
+                  height: scaleSize(56),
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  source={require("@/screens/tasks/head.png")}
+                  contentFit="contain"
+                  style={{ width: scaleSize(46), height: scaleSize(46) }}
+                />
+              </View>
+              <Image
+                source={require("./more.svg")}
+                style={{
+                  width: scaleSize(28),
+                  height: scaleSize(28),
+                  marginLeft: scaleSize(5),
+                }}
+              />
+            </View>
+          </AppButton>
+          <AppButton
+            style={{ marginRight: scaleSize(16) }}
+            onPress={() => {
+              navigation.navigate("stories");
             }}
           >
             <Image
-              style={{ width: scaleSize(60), height: scaleSize(60) }}
-              source={require("@/assets/home/keyboard.png")}
+              style={{ width: 48, height: 48, zIndex: 10 }}
+              source={require("@/assets/home/rili.png")}
             ></Image>
-          </Animated.View>
-
-          <Animated.View
-            onTouchStart={(event) => {
-              event.stopPropagation();
-              setShowRecording(true);
-              clickAdd();
-            }}
-            style={{
-              width: scaleSize(actionButtonSize),
-              height: scaleSize(actionButtonSize),
-              backgroundColor: "#fff",
-              borderRadius: scaleSize(actionButtonSize),
-              alignItems: "center",
-              justifyContent: "center",
-              marginLeft: scaleSize(keyboardVoiceMargin),
-              opacity: rotationAnimatedValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0],
-              }),
-              transform: [
-                {
-                  translateX: rotationAnimatedValue.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -actionsTranslateX],
-                  }),
-                },
-                {
-                  translateY: rotationAnimatedValue.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, actionsTranslateY],
-                  }),
-                },
-                {
-                  scale: rotationAnimatedValue.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, addButtonSize / actionButtonSize],
-                  }),
-                },
-              ],
-            }}
-          >
-            <Image
-              style={{ width: scaleSize(60), height: scaleSize(60) }}
-              source={require("@/assets/home/voice.png")}
-            ></Image>
-          </Animated.View>
+          </AppButton>
         </View>
         <View
           style={{
-            marginTop: scaleSize(addActionsMargin),
-            width: scaleSize(addButtonSize),
-            height: scaleSize(addButtonSize),
-            marginBottom: scaleSize(17),
+            alignItems: "center",
+            marginBottom: scaleSize(80),
           }}
         >
-          <Animated.View
-            onTouchStart={(event) => {
-              event.stopPropagation();
-              clickAdd();
-            }}
+          {returnHomeDuration > Date.now() ? (
+            <View style={{}}>
+              <HBase
+                style={{
+                  color: "#000",
+                  textAlign: "center",
+                  fontSize: scaleSize(16),
+                  fontStyle: "normal",
+                  fontWeight: 500,
+                }}
+              >
+                On a trip!
+              </HBase>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  alignSelf: "center",
+                  marginTop: scaleSize(15),
+                }}
+              >
+                <Timer returnHomeDuration={returnHomeDuration} />
+              </View>
+              <HBase
+                style={{
+                  color: "#000",
+                  textAlign: "center",
+                  fontSize: scaleSize(16),
+                  fontStyle: "normal",
+                  fontWeight: 500,
+                  opacity: 0.3,
+                  marginTop: scaleSize(4),
+                }}
+              >
+                I will come back later.
+              </HBase>
+              <Image
+                style={{
+                  width: scaleSize(312),
+                  height: scaleSize(300),
+                  marginTop: scaleSize(-10),
+                }}
+                source={require("./fire.png")}
+              ></Image>
+            </View>
+          ) : (
+            <Image
+              style={{ width: scaleSize(273), height: scaleSize(371) }}
+              source={animalImage}
+            ></Image>
+          )}
+        </View>
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            alignSelf: "center",
+
+            position: "absolute",
+            bottom: 0,
+          }}
+        >
+          <View
             style={{
-              marginBottom: scaleSize(17),
-              width: scaleSize(addButtonSize),
-              height: scaleSize(addButtonSize),
-              backgroundColor: rotationAnimatedValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
-              }),
-              transform: [
-                {
-                  rotate: rotationAnimatedValue.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ["45deg", "0deg"],
-                  }),
-                },
-              ],
-              borderRadius: 40,
+              flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <Animated.Image
-              style={{
-                width: scaleSize(32),
-                height: scaleSize(32),
-                opacity: rotationAnimatedValue.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, 1],
-                }),
-                // tintColor: rotationAnimatedValue.interpolate({
-                //   inputRange: [0, 1],
-                //   outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
-                // }),
-                // tintColor: "white",
+            <Animated.View
+              onTouchStart={(event) => {
+                clickInput();
               }}
-              // tintColor={"white"}
-              // tintColor={rotationAnimatedValue.interpolate({
-              //   inputRange: [0, 1],
-              //   outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
-              // })}
-              source={require("@/assets/home/add.png")}
-            ></Animated.Image>
-            <Animated.Image
               style={{
-                position: "absolute",
-                alignSelf: "center",
-                width: scaleSize(32),
-                height: scaleSize(32),
+                width: scaleSize(actionButtonSize),
+                height: scaleSize(actionButtonSize),
+                backgroundColor: "#fff",
+                borderRadius: 60,
+                alignItems: "center",
+                justifyContent: "center",
+                transform: [
+                  {
+                    translateX: rotationAnimatedValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, actionsTranslateX],
+                    }),
+                  },
+                  {
+                    translateY: rotationAnimatedValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, actionsTranslateY],
+                    }),
+                  },
+                  {
+                    scale: rotationAnimatedValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, addButtonSize / actionButtonSize],
+                    }),
+                  },
+                ],
                 opacity: rotationAnimatedValue.interpolate({
                   inputRange: [0, 1],
                   outputRange: [1, 0],
                 }),
               }}
-              source={require("@/assets/home/addwhite.png")}
-            ></Animated.Image>
-          </Animated.View>
-          {showRecording && (
-            <GestureHandlerRootView
+            >
+              <Image
+                style={{ width: scaleSize(60), height: scaleSize(60) }}
+                source={require("@/assets/home/keyboard.png")}
+              ></Image>
+            </Animated.View>
+
+            <Animated.View
+              onTouchStart={(event) => {
+                event.stopPropagation();
+                setShowRecording(true);
+                clickAdd();
+              }}
               style={{
-                position: "absolute",
-                left: 0,
-                bottom: 0,
-                right: 0,
-                justifyContent: "center",
+                width: scaleSize(actionButtonSize),
+                height: scaleSize(actionButtonSize),
+                backgroundColor: "#fff",
+                borderRadius: scaleSize(actionButtonSize),
                 alignItems: "center",
+                justifyContent: "center",
+                marginLeft: scaleSize(keyboardVoiceMargin),
+                opacity: rotationAnimatedValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 0],
+                }),
+                transform: [
+                  {
+                    translateX: rotationAnimatedValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -actionsTranslateX],
+                    }),
+                  },
+                  {
+                    translateY: rotationAnimatedValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, actionsTranslateY],
+                    }),
+                  },
+                  {
+                    scale: rotationAnimatedValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, addButtonSize / actionButtonSize],
+                    }),
+                  },
+                ],
               }}
             >
-              {recording !== 0 && (
-                <View
-                  style={{
-                    alignItems: "center",
-                    width: scaleSize(300),
-                    marginBottom: scaleSize(30),
-                  }}
-                >
-                  <RecordingView></RecordingView>
-
-                  <Image
-                    style={{ width: 11, height: 6, marginTop: scaleSize(30) }}
-                    source={require("@/assets/home/arrowup.png")}
-                  ></Image>
-                  <HBase
+              <Image
+                style={{ width: scaleSize(60), height: scaleSize(60) }}
+                source={require("@/assets/home/voice.png")}
+              ></Image>
+            </Animated.View>
+          </View>
+          <View
+            style={{
+              marginTop: scaleSize(addActionsMargin),
+              width: scaleSize(addButtonSize),
+              height: scaleSize(addButtonSize),
+              marginBottom: scaleSize(17),
+            }}
+          >
+            <Animated.View
+              onTouchStart={(event) => {
+                event.stopPropagation();
+                clickAdd();
+              }}
+              style={{
+                marginBottom: scaleSize(17),
+                width: scaleSize(addButtonSize),
+                height: scaleSize(addButtonSize),
+                backgroundColor: rotationAnimatedValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [
+                    "rgba(51, 51, 51, 1)",
+                    "rgba(255, 255, 255, 1)",
+                  ],
+                }),
+                transform: [
+                  {
+                    rotate: rotationAnimatedValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ["45deg", "0deg"],
+                    }),
+                  },
+                ],
+                borderRadius: 40,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Animated.Image
+                style={{
+                  width: scaleSize(32),
+                  height: scaleSize(32),
+                  opacity: rotationAnimatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                  }),
+                  // tintColor: rotationAnimatedValue.interpolate({
+                  //   inputRange: [0, 1],
+                  //   outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
+                  // }),
+                  // tintColor: "white",
+                }}
+                // tintColor={"white"}
+                // tintColor={rotationAnimatedValue.interpolate({
+                //   inputRange: [0, 1],
+                //   outputRange: ["rgba(51, 51, 51, 1)", "rgba(255, 255, 255, 1)"],
+                // })}
+                source={require("@/assets/home/add.png")}
+              ></Animated.Image>
+              <Animated.Image
+                style={{
+                  position: "absolute",
+                  alignSelf: "center",
+                  width: scaleSize(32),
+                  height: scaleSize(32),
+                  opacity: rotationAnimatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 0],
+                  }),
+                }}
+                source={require("@/assets/home/addwhite.png")}
+              ></Animated.Image>
+            </Animated.View>
+            {showRecording && (
+              <GestureHandlerRootView
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                {recording !== 0 && (
+                  <View
                     style={{
-                      color: "#86A2B2",
-                      textAlign: "center",
-                      fontSize: 12,
-                      fontStyle: "normal",
-                      fontWeight: "600",
-                      textTransform: "capitalize",
-                      marginTop: scaleSize(7),
+                      alignItems: "center",
+                      width: scaleSize(300),
+                      marginBottom: scaleSize(30),
                     }}
                   >
-                    {recording === 1
-                      ? "Swipe up to cancel"
-                      : recording === 2
-                      ? "Release to cancel"
-                      : "Hold to record"}
-                  </HBase>
-                </View>
-              )}
+                    <RecordingView></RecordingView>
 
-              {showLoading ? (
-                <View
-                  style={{
-                    width: scaleSize(addButtonSize),
-                    height: scaleSize(addButtonSize),
-                    backgroundColor: "#fff",
-                    borderRadius: scaleSize(addButtonSize),
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Loading width={50} height={50} borderSize={30}></Loading>
-                </View>
-              ) : (
-                <Animated.View
-                  onTouchStart={(event) => {
-                    event.stopPropagation();
-                    setRecording(1);
-                    handleStart();
-                    tapStartLocation.current = {
-                      x: event.nativeEvent.locationX,
-                      y: event.nativeEvent.locationY,
-                    };
-                  }}
-                  onTouchMove={(event) => {
-                    if (
-                      event.nativeEvent.locationY - tapStartLocation.current.y <
-                      -5
-                    ) {
-                      setRecording(2);
-                    } else {
+                    <Image
+                      style={{ width: 11, height: 6, marginTop: scaleSize(30) }}
+                      source={require("@/assets/home/arrowup.png")}
+                    ></Image>
+                    <HBase
+                      style={{
+                        color: "#86A2B2",
+                        textAlign: "center",
+                        fontSize: 12,
+                        fontStyle: "normal",
+                        fontWeight: "600",
+                        textTransform: "capitalize",
+                        marginTop: scaleSize(7),
+                      }}
+                    >
+                      {recording === 1
+                        ? "Swipe up to cancel"
+                        : recording === 2
+                        ? "Release to cancel"
+                        : "Hold to record"}
+                    </HBase>
+                  </View>
+                )}
+
+                {showLoading ? (
+                  <View
+                    style={{
+                      width: scaleSize(addButtonSize),
+                      height: scaleSize(addButtonSize),
+                      backgroundColor: "#fff",
+                      borderRadius: scaleSize(addButtonSize),
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Loading width={50} height={50} borderSize={30}></Loading>
+                  </View>
+                ) : (
+                  <Animated.View
+                    onTouchStart={(event) => {
+                      event.stopPropagation();
                       setRecording(1);
-                    }
-                  }}
-                  onTouchCancel={(event) => {
-                    setRecording(0);
-                    ExpoSpeechRecognitionModule.abort();
-                  }}
-                  onTouchEnd={() => {
-                    setRecording(0);
-                    if (recording === 2) {
+                      handleStart();
+                      tapStartLocation.current = {
+                        x: event.nativeEvent.locationX,
+                        y: event.nativeEvent.locationY,
+                      };
+                    }}
+                    onTouchMove={(event) => {
+                      if (
+                        event.nativeEvent.locationY -
+                          tapStartLocation.current.y <
+                        -5
+                      ) {
+                        setRecording(2);
+                      } else {
+                        setRecording(1);
+                      }
+                    }}
+                    onTouchCancel={(event) => {
+                      setRecording(0);
                       ExpoSpeechRecognitionModule.abort();
-                      return;
-                    }
-                    ExpoSpeechRecognitionModule.stop();
-                  }}
-                  style={{
-                    width: scaleSize(addButtonSize),
-                    height: scaleSize(addButtonSize),
-                    backgroundColor: recording ? "#FF7C14" : "#fff",
-                    borderRadius: 60,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Image
-                    style={{ width: 40, height: 40 }}
-                    source={
-                      recording
-                        ? require("@/assets/home/voicewhite.png")
-                        : require("@/assets/home/voice.png")
-                    }
-                  ></Image>
-                </Animated.View>
-              )}
-            </GestureHandlerRootView>
-          )}
+                    }}
+                    onTouchEnd={() => {
+                      setRecording(0);
+                      if (recording === 2) {
+                        ExpoSpeechRecognitionModule.abort();
+                        return;
+                      }
+                      ExpoSpeechRecognitionModule.stop();
+                    }}
+                    style={{
+                      width: scaleSize(addButtonSize),
+                      height: scaleSize(addButtonSize),
+                      backgroundColor: recording ? "#FF7C14" : "#fff",
+                      borderRadius: 60,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Image
+                      style={{ width: 40, height: 40 }}
+                      source={
+                        recording
+                          ? require("@/assets/home/voicewhite.png")
+                          : require("@/assets/home/voice.png")
+                      }
+                    ></Image>
+                  </Animated.View>
+                )}
+              </GestureHandlerRootView>
+            )}
+          </View>
         </View>
-      </View>
 
-      {/* <View>
+        {/* <View>
         {!recognizing ? (
           <Button title="Start" onPress={handleStart} />
         ) : (
@@ -502,6 +582,7 @@ export default function HomeScreen({ navigation }: any) {
           <Text>{transcript}</Text>
         </ScrollView>
       </View> */}
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
