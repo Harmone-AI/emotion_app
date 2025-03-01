@@ -102,7 +102,7 @@ export default function Tasks({ navigation, onClose }: any) {
   React.useEffect(() => {
     get();
   }, []);
-
+  const getTaskByQuestId = useQuestStore((state) => state.getTaskByQuestId);
   return (
     <Page
       contentContainerStyle={
@@ -168,6 +168,12 @@ export default function Tasks({ navigation, onClose }: any) {
                       shadowOpacity: 1,
                       borderRadius: 8,
                       marginTop: scaleSize(8),
+                    }}
+                    onPress={async () => {
+                      useQuestStore.getState().latestQuestId = quest.id;
+                      navigation.navigate("quest", {
+                        questId: quest.id,
+                      });
                     }}
                   >
                     <View

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { tokenCache } from "./cache";
+import { enableScreens } from "react-native-screens";
 import { useAppState, useNetworkState } from "./libs/query-helpers";
 import Navigation from "./navigation";
 import "./style.css";
@@ -18,6 +18,7 @@ import {
 import Toast from "./components/Toast";
 
 SplashScreen.preventAutoHideAsync();
+// enableScreens(false);
 
 const queryClient = new QueryClient({
   defaultOptions: {

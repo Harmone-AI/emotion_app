@@ -19,8 +19,10 @@ export type RootStackParamList = {
   TaskCompletion: undefined;
   StoryDetail: Story;
   tasks: undefined;
-  task: undefined;
-  story: undefined;
+  quest: undefined;
+  story: {
+    id: number;
+  };
   "keyboard-input-target": undefined;
   test: undefined;
 };

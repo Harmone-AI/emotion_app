@@ -35,6 +35,8 @@ import React from "react";
 import { useCharacterStore } from "@/hooks/zustand/character";
 import Timer from "./Timer";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
+import { useStoryStore } from "@/hooks/zustand/story";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
@@ -93,7 +95,7 @@ export default function HomeScreen({ navigation }: any) {
     setShowLoading(true);
     let res = await post(transcript);
     setShowLoading(false);
-    navigation.navigate("task");
+    navigation.navigate("quest");
   };
 
   const clickAdd = () => {
@@ -105,6 +107,7 @@ export default function HomeScreen({ navigation }: any) {
       // rotationAnimatedValue.setValue(0); // 重置旋转
     });
   };
+  const getStories = useStoryStore((state) => state.getStories);
 
   const clickInput = () => {
     navigation.navigate("keyboard-input-target");
@@ -124,9 +127,23 @@ export default function HomeScreen({ navigation }: any) {
     actionButtonSize / 2 + addButtonSize / 2 + addButtonActionsMargin
   );
   const tapStartLocation = React.useRef({ x: 0, y: 0 });
-  const returnHomeDuration = useCharacterStore(
-    (state) => state.returnHomeDuration
+  const latestStoryAvailableAt = useStoryStore(
+    (state) => state.latestStoryAvailableAt
   );
+  const lastStoryFetchTime = useStoryStore((state) => state.lastStoryFetchTime);
+  const [latestStoryAvailable, setLatestStoryAvailable] = React.useState(false);
+  const checkLatestStoryAvailable = useCallback(() => {
+    if (
+      latestStoryAvailableAt &&
+      new Date(latestStoryAvailableAt) > new Date(lastStoryFetchTime) &&
+      new Date(latestStoryAvailableAt) < new Date()
+    ) {
+      setLatestStoryAvailable(true);
+    } else {
+      setLatestStoryAvailable(false);
+    }
+  }, [latestStoryAvailableAt, lastStoryFetchTime]);
+  useFocusEffect(checkLatestStoryAvailable);
   return (
     <View
       style={{
@@ -141,6 +158,8 @@ export default function HomeScreen({ navigation }: any) {
             setRecording(0);
             setShowRecording(false);
             rotationAnimatedValue.setValue(0);
+          }
+          if (rotationAnimatedValue._value <= 0.1) {
             clickAdd();
           }
         }}
@@ -205,15 +224,50 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </AppButton>
           <AppButton
-            style={{ marginRight: scaleSize(16) }}
+            style={{
+              marginRight: scaleSize(16),
+              backgroundColor: "white",
+              borderRadius: scaleSize(48),
+              width: scaleSize(48),
+              height: scaleSize(48),
+              justifyContent: "center",
+              alignItems: "center",
+            }}
             onPress={() => {
               navigation.navigate("stories");
             }}
           >
-            <Image
-              style={{ width: 48, height: 48, zIndex: 10 }}
-              source={require("@/assets/home/rili.png")}
-            ></Image>
+            {latestStoryAvailable ? (
+              <View
+                style={{
+                  width: scaleSize(29),
+                  height: scaleSize(38),
+                  borderRadius: scaleSize(10),
+                  backgroundColor: "#FF4524",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#FFF",
+                    fontFamily: "SF Pro Rounded",
+                    fontSize: scaleSize(10),
+                    fontStyle: "normal",
+                    fontWeight: 700,
+                    lineHeight: scaleSize(32),
+                    textTransform: "capitalize",
+                  }}
+                >
+                  New
+                </Text>
+              </View>
+            ) : (
+              <Image
+                style={{ width: scaleSize(48), height: scaleSize(48) }}
+                source={require("@/assets/home/rili.png")}
+              ></Image>
+            )}
           </AppButton>
         </View>
         <View
@@ -222,7 +276,7 @@ export default function HomeScreen({ navigation }: any) {
             marginBottom: scaleSize(80),
           }}
         >
-          {returnHomeDuration > Date.now() ? (
+          {new Date(latestStoryAvailableAt) > new Date() ? (
             <View style={{}}>
               <HBase
                 style={{
@@ -243,7 +297,14 @@ export default function HomeScreen({ navigation }: any) {
                   marginTop: scaleSize(15),
                 }}
               >
-                <Timer returnHomeDuration={returnHomeDuration} />
+                <Timer
+                  returnHomeDuration={new Date(
+                    latestStoryAvailableAt
+                  ).valueOf()}
+                  onFinish={() => {
+                    checkLatestStoryAvailable();
+                  }}
+                />
               </View>
               <HBase
                 style={{

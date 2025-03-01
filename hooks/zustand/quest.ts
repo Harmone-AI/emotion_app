@@ -3,6 +3,7 @@ import * as api from "@/api/api";
 import { persist, createJSONStorage } from "zustand/middleware";
 import storage, { zustandStorage } from "../storage";
 import { immer } from "zustand/middleware/immer";
+import { useStoryStore } from "./story";
 
 interface QuestState {
   latestUserInput: string;
@@ -10,6 +11,7 @@ interface QuestState {
   questMap: { [index: string | "latest"]: api.Quest };
   taskMap: { [index: string]: api.Task };
   post: (userInput: string) => Promise<void>;
+  getTaskByQuestId: (questId: number) => Promise<void>;
   confirm: (taskId: number) => Promise<void>;
   deleteTask: (taskId: number) => Promise<() => void>;
   finishTask: (taskId: number) => Promise<void>;
@@ -44,6 +46,22 @@ export const useQuestStore = create<QuestState>()(
           state.latestUserInput = userInput;
           state.latestQuestId = res.id;
           state.questMap[res.id] = res;
+          state.taskMap = { ...state.taskMap, ...tasks };
+        });
+      },
+      getTaskByQuestId: async (questId: number) => {
+        const quest = get().questMap[questId];
+        const tasks: { [index: string]: api.Task } = {};
+        await Promise.all(
+          quest.taskids.split(",").map(async (item) => {
+            const id = Number(item);
+            const json = await api.task(id);
+            tasks[id] = json;
+            return json;
+          })
+        );
+        set((state) => {
+          state.latestQuestId = quest.id;
           state.taskMap = { ...state.taskMap, ...tasks };
         });
       },
@@ -135,6 +153,9 @@ export const useQuestStore = create<QuestState>()(
         const quest = await api.complete_all_task(questId);
         set((state) => {
           state.questMap[questId] = { ...state.questMap[questId], ...quest };
+          useStoryStore.setState({
+            latestStoryAvailableAt: quest.story_available_at,
+          });
         });
       },
     })),

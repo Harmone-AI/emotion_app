@@ -18,7 +18,7 @@ import {
   TextInput,
 } from "react-native";
 import * as api from "@/api/api";
-import CreateView from "../../task/createView";
+import CreateView from "../../quest/createView";
 import Loading from "@/components/Loading";
 const animalImage = require("@/assets/animal.png");
 

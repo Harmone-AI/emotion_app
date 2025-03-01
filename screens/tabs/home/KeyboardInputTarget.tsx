@@ -20,7 +20,7 @@ import {
   Platform,
 } from "react-native";
 import * as api from "@/api/api";
-import CreateView from "../../task/createView";
+import CreateView from "../../quest/createView";
 import { useScaleSize } from "@/hooks/useScreen";
 import AppButton from "@/components/AppButton";
 import Page from "@/components/Page";
@@ -47,7 +47,7 @@ export default function KeyboardInputTargetScreen() {
     try {
       setShowLoading(true);
       await post(userInput);
-      navigation.dispatch(StackActions.replace("task"));
+      navigation.dispatch(StackActions.replace("quest"));
     } catch (e) {
       console.error("Error done:", e);
       setShowLoading(false);

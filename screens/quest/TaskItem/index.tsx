@@ -363,7 +363,7 @@ export default React.memo(
                     setLoading(true);
                     if (isFinalTask) {
                       await finishAllTask(questId);
-                      await getCharacter();
+                      // await getCharacter();
                     }
                     finishTask(task?.task_id);
                   } catch (error) {

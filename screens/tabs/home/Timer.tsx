@@ -26,11 +26,25 @@ function millisecondToTime(duration: number) {
 }
 
 export default React.memo(
-  ({ returnHomeDuration }: { returnHomeDuration: number }) => {
+  ({
+    returnHomeDuration,
+    onFinish,
+  }: {
+    returnHomeDuration: number;
+    onFinish: () => void;
+  }) => {
     const scaleSize = useScaleSize();
     const [timer, setTimer] = React.useState<(string | number)[]>([]);
     React.useEffect(() => {
+      if (returnHomeDuration - Date.now() <= 0) {
+        onFinish();
+        return;
+      }
       const interval = setInterval(() => {
+        if (returnHomeDuration - Date.now() <= 0) {
+          onFinish();
+          return;
+        }
         setTimer(millisecondToTime(returnHomeDuration - Date.now()));
       }, 1000);
       return () => clearInterval(interval);

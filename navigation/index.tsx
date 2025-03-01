@@ -5,6 +5,7 @@ import {
 } from "@react-navigation/drawer";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import * as React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -18,16 +19,16 @@ import TaskCompletionScreen from "../screens/TaskCompletionScreen";
 import { DrawerParamList, RootStackParamList } from "./types";
 import { PostHogProvider } from "posthog-react-native";
 import Tasks from "@/screens/tasks";
-import TaskScreen from "@/screens/task";
+import TaskScreen from "@/screens/quest";
 import { Image } from "expo-image";
 import { useScaleSize } from "@/hooks/useScreen";
 import { supabase } from "@/hooks/supabase";
 import * as SplashScreen from "expo-splash-screen";
 import KeyboardInputTargetScreen from "@/screens/tabs/home/KeyboardInputTarget";
 import TestScreen from "@/screens/TestScreen";
+import QuestScreen from "@/screens/quest";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const Drawer = createDrawerNavigator<DrawerParamList>();
 
 export default function Navigation() {
   const [initialRouteName, setInitialRouteName] = React.useState<
@@ -102,8 +103,8 @@ export default function Navigation() {
             <Stack.Screen name="SignIn" component={SignInScreen} />
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen
-              name="task"
-              component={TaskScreen}
+              name="quest"
+              component={QuestScreen}
               options={{
                 animation: "slide_from_bottom",
               }}
@@ -113,6 +114,15 @@ export default function Navigation() {
               component={KeyboardInputTargetScreen}
               options={{
                 presentation: "containedTransparentModal",
+              }}
+            />
+            <Stack.Screen
+              name="story"
+              component={StoryDetailScreen}
+              options={{
+                presentation: "formSheet",
+                title: "",
+                headerShadowVisible: false,
               }}
             />
           </Stack.Group>
@@ -137,16 +147,12 @@ export default function Navigation() {
               component={StoryListScreen}
               options={{ title: "Story List" }}
             />
+
             <Stack.Screen
-              name="story"
-              component={StoryDetailScreen}
-              options={{
-                presentation: "formSheet",
-                title: "",
-                headerShadowVisible: false,
-              }}
+              name="test"
+              component={TestScreen}
+              options={{ presentation: "formSheet" }}
             />
-            <Stack.Screen name="test" component={TestScreen} options={{}} />
           </Stack.Group>
         </>
         {/* )} */}

@@ -85,10 +85,15 @@ export type Character = {
   remaining_seconds: number;
 };
 
+export type TaskListCompleted = {
+  id: number;
+  story_available_at: string;
+};
+
 export async function complete_all_task(
   questId: number
-): Promise<Partial<Quest>> {
-  let res = await http<Partial<Quest>>(
+): Promise<TaskListCompleted> {
+  let res = await http<TaskListCompleted>(
     "/complete_tasklist/" + questId,
     {},
     "POST"
@@ -98,5 +103,35 @@ export async function complete_all_task(
 
 export async function character(): Promise<Character> {
   let res = await http<Character>("/check_countdown/1", {}, "GET");
+  return res;
+}
+
+export type Story = {
+  id: number;
+  user_id: number;
+  tasks_id: number;
+  title: string;
+  story_content: string;
+  options: string;
+  created_at: string;
+  choice?: number;
+};
+
+export async function getStoryByQuestId(questId: number): Promise<Story> {
+  let res = await http<Story>(
+    "/create_story/" + questId,
+    { task_list_id: questId, user_id: 1 },
+    "POST"
+  );
+  return res;
+}
+
+export async function getStories(): Promise<Story[]> {
+  let res = await http<Story[]>("/user/1/history", {}, "GET");
+  return res;
+}
+
+export async function patchStory(storyId: number, data: Partial<Story>) {
+  let res = await http<Story>(`/stories/${storyId}`, data, "PATCH");
   return res;
 }

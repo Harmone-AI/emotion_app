@@ -18,7 +18,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import React from "react";
 import AppButton from "@/components/AppButton";
 import { useNavigation } from "@react-navigation/native";
@@ -36,11 +36,27 @@ import { useQuestStore } from "@/hooks/zustand/quest";
 import Share, { Social } from "react-native-share";
 import AppLoading from "@/components/Loading";
 import ViewShot, { captureRef } from "react-native-view-shot";
+import * as FileSystem from "expo-file-system";
 
-export default function TaskScreen() {
+export default function QuestScreen({ route }: any) {
   const scaleSize = useScaleSize();
   const navigation = useNavigation();
-  const quest = useQuestStore((state) => state.questMap[state.latestQuestId]);
+  const questId = route.params?.questId;
+  const latestQuest = useQuestStore(
+    (state) => state.questMap[state.latestQuestId]
+  );
+  const getTaskByQuestId = useQuestStore((state) => state.getTaskByQuestId);
+  const quest = React.useMemo(() => {
+    if (questId) {
+      return useQuestStore.getState().questMap[questId];
+    }
+    return latestQuest;
+  }, [latestQuest, questId]);
+  React.useEffect(() => {
+    if (questId) {
+      getTaskByQuestId(questId);
+    }
+  }, [questId]);
   const addTask = useQuestStore((state) => state.addTask);
   const post = useQuestStore((state) => state.post);
   const latestUserInput = useQuestStore((state) => state.latestUserInput);
@@ -80,13 +96,11 @@ export default function TaskScreen() {
   const share = React.useCallback(() => {
     setReadyToShare(true);
   }, []);
-  React.useEffect(() => {
-    if (!readyToShare) {
-      return;
-    }
-    console.log("readyToShare", readyToShare);
-  }, [readyToShare]);
   const safeBottom = useSafeBottom();
+  const ref = useRef<ViewShot>(null);
+  const onImageLoad = useCallback(() => {
+    ref.current?.capture?.();
+  }, []);
   const header = (
     <View>
       <ReactImage
@@ -186,12 +200,20 @@ export default function TaskScreen() {
             source={require("./goal.png")}
             style={{ width: scaleSize(20), height: scaleSize(20) }}
             resizeMode="contain"
+            onLoad={onImageLoad}
           />
         </View>
       </View>
     </View>
   );
   const [loading, setLoading] = useState(false);
+  if (!quest) {
+    return (
+      <View style={{ marginTop: scaleSize(100) }}>
+        <AppLoading />
+      </View>
+    );
+  }
   return (
     <View
       style={{
@@ -599,6 +621,7 @@ export default function TaskScreen() {
           }}
         >
           <ViewShot
+            ref={ref}
             onCapture={(result) => {
               sharedImageUri.current = "data:image/png;base64," + result;
             }}
@@ -665,6 +688,7 @@ export default function TaskScreen() {
                   source={require("@/assets/images/qr.png")}
                   style={{ width: scaleSize(50), height: scaleSize(50) }}
                   resizeMode="contain"
+                  onLoad={onImageLoad}
                 />
               </View>
             </View>
