@@ -158,6 +158,15 @@ export default function StoryDetailScreen() {
           >
             {story.title}
           </HBase>
+          <Image
+            source={{ uri: story.head_img }}
+            style={{
+              width: scaleSize(354),
+              height: scaleSize(153),
+              marginTop: scaleSize(16),
+              alignSelf: "center",
+            }}
+          />
           {/* Story Content */}
           <View>
             {contentLines.map((line, index) => {
@@ -223,6 +232,7 @@ export default function StoryDetailScreen() {
                             lineHeight: 20,
                             textTransform: "capitalize",
                             opacity: 0.5,
+                            width: scaleSize(338),
                           },
                           selectedChoice === line && {
                             color: "white",
@@ -277,20 +287,42 @@ export default function StoryDetailScreen() {
                   </AppButton>
                 );
               }
-
+              const lineArray = line.split(" ");
+              const headLine = lineArray[0];
+              const content = line.replaceAll(headLine + " ", "") || headLine;
               return (
                 <HBase
                   key={index}
-                  style={{
-                    color: "#282E32",
-                    fontSize: 16,
-                    fontStyle: "normal",
-                    fontWeight: "400",
-                    lineHeight: 24,
-                    marginTop: scaleSize(16),
-                  }}
+                  style={[
+                    {
+                      color: "#282E32",
+                      fontSize: 16,
+                      fontStyle: "normal",
+                      fontWeight: "400",
+                      lineHeight: 24,
+                      marginTop: scaleSize(16),
+                      width: scaleSize(338),
+                    },
+                    headLine == "#" && {
+                      margin: ".67em 0",
+                      fontWeight: "600",
+                      paddingBottom: ".3em",
+                      fontSize: 24,
+                      borderBottom: "1px solid #E5E5E5",
+                    },
+                    headLine == "##" && {
+                      fontWeight: "600",
+                      paddingBottom: ".3em",
+                      fontSize: 18,
+                      borderBottom: "1px solid #E5E5E5",
+                    },
+                    headLine == "###" && {
+                      fontWeight: "600",
+                      fontSize: 16,
+                    },
+                  ]}
                 >
-                  {line}
+                  {content}
                 </HBase>
               );
             })}
@@ -303,6 +335,7 @@ export default function StoryDetailScreen() {
               fontWeight: "400",
               lineHeight: 24,
               marginTop: scaleSize(16),
+              width: scaleSize(338),
             }}
           >
             {choicesMap[selectedChoice]}

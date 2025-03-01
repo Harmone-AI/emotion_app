@@ -22,7 +22,6 @@ export default function StoryListScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
   const getStories = useStoryStore((state) => state.getStories);
   const stories = useStoryStore((state) => state.stories);
-  console.log("stories", JSON.stringify(stories));
   const storyMapByDate = stories.reduce((acc, curr) => {
     if (!curr?.created_at) {
       return acc;
@@ -107,7 +106,7 @@ export default function StoryListScreen() {
                     <View>
                       {/* Story Image */}
                       <Image
-                        source={{ uri: story.image_url }}
+                        source={{ uri: story.head_img }}
                         style={{
                           width: scaleSize(310),
                           height: scaleSize(153),
