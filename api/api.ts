@@ -1,12 +1,15 @@
+import StorageHelper from "@/hooks/storage";
+
 async function http<T>(url: string, params: any, method?: string): Promise<T> {
-  let data = {
+  let data: RequestInit = {
     method: method || "POST",
+    headers: {
+      Authorization: `Bearer ${StorageHelper.supabaseToken}`,
+    },
   };
   if (!method || method == "POST" || method == "PUT" || method == "PATCH") {
+    data.headers["Content-Type"] = "application/json";
     data.body = JSON.stringify(params);
-    data.headers = {
-      "Content-Type": "application/json",
-    };
   }
   let res = await fetch(process.env.EXPO_PUBLIC_ENDPOINT_URL + url, data);
   return res.status == 204
@@ -76,7 +79,7 @@ export async function patch_task(
 }
 
 export async function quests(): Promise<Quest[]> {
-  let res = await http<Quest[]>("/user/1/task_lists", {}, "GET");
+  let res = await http<Quest[]>("/task_lists", {}, "GET");
   return res;
 }
 
@@ -127,11 +130,16 @@ export async function getStoryByQuestId(questId: number): Promise<Story> {
 }
 
 export async function getStories(): Promise<Story[]> {
-  let res = await http<Story[]>("/user/1/history", {}, "GET");
+  let res = await http<Story[]>("/stories", {}, "GET");
   return res;
 }
 
 export async function patchStory(storyId: number, data: Partial<Story>) {
   let res = await http<Story>(`/stories/${storyId}`, data, "PATCH");
+  return res;
+}
+
+export async function me() {
+  let res = await http<Story>(`/me`, {}, "GET");
   return res;
 }

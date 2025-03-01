@@ -22,17 +22,18 @@ export default function StoryListScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
   const getStories = useStoryStore((state) => state.getStories);
   const stories = useStoryStore((state) => state.stories);
-  const storyMapByDate = stories.reduce((acc, curr) => {
-    if (!curr?.created_at) {
+  const storyMapByDate =
+    stories?.reduce?.((acc, curr) => {
+      if (!curr?.created_at) {
+        return acc;
+      }
+      const date = curr.created_at.split("T")[0];
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(curr);
       return acc;
-    }
-    const date = curr.created_at.split("T")[0];
-    if (!acc[date]) {
-      acc[date] = [];
-    }
-    acc[date].push(curr);
-    return acc;
-  }, {} as { [index: string]: Story[] });
+    }, {} as { [index: string]: Story[] }) || {};
   useEffect(() => {
     getStories();
   }, []);

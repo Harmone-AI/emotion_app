@@ -34,6 +34,13 @@ export default class StorageHelper {
       storage.delete("tasks");
     }
   }
+  public static get supabaseToken(): string | null {
+    const value = storage.getString("sb-supa-auth-token");
+    if (value) {
+      return JSON.parse(value).access_token;
+    }
+    return null;
+  }
 }
 
 export const zustandStorage = createJSONStorage(() => ({

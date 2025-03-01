@@ -31,7 +31,6 @@ export const useQuestStore = create<QuestState>()(
       post: async (userInput: string) => {
         let res = await api.word2tasklist({
           user_input: userInput,
-          user_id: 1,
         });
         const tasks: { [index: string]: api.Task } = {};
         await Promise.all(

@@ -681,6 +681,7 @@ export default function QuestScreen({ route }: any) {
                     source={{ uri: quest.begin_img }}
                     style={{ width: scaleSize(34), height: scaleSize(34) }}
                     resizeMode="contain"
+                    onLoad={onImageLoad}
                   />
                 </View>
                 <HBase style={{ flex: 1 }}>{quest.quest_title}</HBase>
