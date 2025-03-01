@@ -1,6 +1,6 @@
-import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Story } from '../types/story';
+import { DrawerNavigationProp } from "@react-navigation/drawer";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Story } from "../types/story";
 
 export type DrawerParamList = {
   Home: undefined;
@@ -15,9 +15,16 @@ export type RootStackParamList = {
   Home: undefined;
   AddGoal: undefined;
   TaskList: undefined;
-  StoryList: undefined;
+  stories: undefined;
   TaskCompletion: undefined;
   StoryDetail: Story;
+  tasks: undefined;
+  quest: undefined;
+  story: {
+    id: number;
+  };
+  "keyboard-input-target": undefined;
+  test: undefined;
 };
 
 export type RootStackNavigationProp =
