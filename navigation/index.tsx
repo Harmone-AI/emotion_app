@@ -148,11 +148,7 @@ export default function Navigation() {
               options={{ title: "Story List" }}
             />
 
-            <Stack.Screen
-              name="test"
-              component={TestScreen}
-              options={{ presentation: "formSheet" }}
-            />
+            <Stack.Screen name="test" component={TestScreen} />
           </Stack.Group>
         </>
         {/* )} */}

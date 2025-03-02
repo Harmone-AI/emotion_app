@@ -7,7 +7,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { enableScreens } from "react-native-screens";
 import { useAppState, useNetworkState } from "./libs/query-helpers";
 import Navigation from "./navigation";
-import "./style.css";
 
 import { PostHogProvider } from "posthog-react-native";
 import * as SplashScreen from "expo-splash-screen";

@@ -9,9 +9,21 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import Animated, {
+  BounceOut,
+  CurvedTransition,
+  EntryExitTransition,
+  FadeIn,
+  FadeOut,
   interpolate,
+  JumpingTransition,
+  Keyframe,
+  LinearTransition,
+  SequencedTransition,
   SharedValue,
   useAnimatedStyle,
+  ZoomIn,
+  ZoomInEasyDown,
+  ZoomOut,
 } from "react-native-reanimated";
 // import RightAction from "../RightActions";
 import { SwipeableMethods } from "react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable";
@@ -24,7 +36,16 @@ import AppButton from "@/components/AppButton";
 import AppLoading from "@/components/Loading";
 import { useToastStore } from "@/hooks/zustand/toast";
 import { useCharacterStore } from "@/hooks/zustand/character";
+import { Shadow } from "react-native-shadow-2";
 
+const ZoomFadeIn = new Keyframe({
+  from: { opacity: 0, transform: [{ scale: 0 }] },
+  to: { opacity: 1, transform: [{ scale: 1 }] },
+}).duration(300);
+const ZoomFadeOut = new Keyframe({
+  from: { opacity: 1, transform: [{ scale: 1 }] },
+  to: { opacity: 0, transform: [{ scale: 0 }] },
+}).duration(300);
 const styles = StyleSheet.create({
   leftAction: {
     flex: 1,
@@ -168,11 +189,13 @@ export default React.memo(
     task,
     isFinalTask,
     questId,
+    onFinishTask,
   }: {
     id: number;
     task: Task;
     isFinalTask: boolean;
     questId: number;
+    onFinishTask?: (allFinish: boolean) => void;
   }) => {
     const scaleSize = useScaleSize();
     const inputRef = React.useRef<TextInput>(null);
@@ -204,18 +227,20 @@ export default React.memo(
     const show = useToastStore((state) => state.show);
     const getCharacter = useCharacterStore((state) => state.get);
     return (
-      <View
+      <Animated.View
         key={id}
         style={{
-          marginBottom: scaleSize(4),
           alignSelf: "center",
           // height: scaleSize(62),
           justifyContent: "center",
         }}
+        exiting={isFinalTask ? undefined : ZoomFadeOut}
+        entering={isFinalTask ? undefined : ZoomFadeIn}
+        layout={isFinalTask ? undefined : LinearTransition}
       >
         <Swipeable
           key={id}
-          // containerStyle={{ overflow: "visible" }}
+          containerStyle={{ padding: scaleSize(5) }}
           friction={2}
           enableTrackpadTwoFingerGesture
           rightThreshold={0}
@@ -271,32 +296,28 @@ export default React.memo(
             // );
           }}
         >
-          <View
-            key={id}
+          <Shadow
+            distance={scaleSize(5)}
+            disabled={true}
             style={{
-              marginVertical: scaleSize(3),
               width: scaleSize(338),
-              minHeight: scaleSize(56),
-              maxHeight: scaleSize(256),
               flexDirection: "row",
               alignItems: "center",
-              paddingLeft: scaleSize(12),
+              backgroundColor: "white",
               paddingRight: scaleSize(12),
-              backgroundColor: "#fff",
 
-              borderColor: "#e5e5e5",
-              borderWidth: scaleSize(1),
-              borderRadius: scaleSize(12),
-
-              shadowColor: "#e5e5e5",
-              shadowOffset: {
-                width: 0,
-                height: 3,
-              },
-              shadowRadius: 0,
-              elevation: 0,
-              shadowOpacity: 1,
+              borderRadius: 12,
+              borderWidth: Math.floor(scaleSize(3)),
+              borderColor: "#E5E5E5",
+              boxShadow: `0px ${scaleSize(4)}px 0px 0px #E5E5E5`,
             }}
+            containerStyle={{
+              borderRadius: scaleSize(12),
+              width: scaleSize(338),
+            }}
+            offset={[0, scaleSize(2)]}
+            startColor="#E5E5E5"
+            endColor="#E5E5E5"
           >
             <TextInput
               ref={inputRef}
@@ -310,8 +331,12 @@ export default React.memo(
                 textAlign: "left",
                 flex: 1,
                 textAlignVertical: "center",
-                paddingTop: scaleSize(10),
-                paddingBottom: scaleSize(10),
+                paddingLeft: scaleSize(10),
+                // paddingBottom: scaleSize(10),
+                paddingRight: scaleSize(10),
+                borderRadius: scaleSize(12),
+                paddingTop: scaleSize(16),
+                paddingBottom: scaleSize(18),
               }}
               numberOfLines={4}
               multiline={true}
@@ -365,7 +390,8 @@ export default React.memo(
                       await finishAllTask(questId);
                       // await getCharacter();
                     }
-                    finishTask(task?.task_id);
+                    await finishTask(task?.task_id);
+                    onFinishTask?.(isFinalTask);
                   } catch (error) {
                     show({
                       message: "The internet connection appears to be offline.",
@@ -382,9 +408,9 @@ export default React.memo(
                 />
               </AppButton>
             )}
-          </View>
+          </Shadow>
         </Swipeable>
-      </View>
+      </Animated.View>
     );
   }
 );
