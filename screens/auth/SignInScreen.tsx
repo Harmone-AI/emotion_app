@@ -25,7 +25,7 @@ import {
 } from "@react-native-google-signin/google-signin";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { RootStackParamList } from "@/types/navigation";
-
+import * as Haptics from "expo-haptics";
 const logoImage = require("@/assets/login/logo.png");
 
 type SignInScreenNavigationProp = NativeStackNavigationProp<
@@ -71,6 +71,7 @@ export default function SignInScreen({ navigation }: Props) {
         onPress={async () => {
           // login();
           try {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             const credential = await AppleAuthentication.signInAsync({
               requestedScopes: [
                 AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -160,6 +161,7 @@ export default function SignInScreen({ navigation }: Props) {
         }}
         onPress={async () => {
           try {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             GoogleSignin.configure({
               iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
             });
@@ -227,6 +229,7 @@ export default function SignInScreen({ navigation }: Props) {
           Logging In Indicates That You Have Read And Agreed To Our{" "}
           <Text
             onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               console.log("Terms Of Service");
               WebBrowser.openBrowserAsync("https://expo.dev");
             }}
@@ -235,7 +238,12 @@ export default function SignInScreen({ navigation }: Props) {
             Terms Of Service
           </Text>{" "}
           And{" "}
-          <Text onPress={() => {}} style={{ color: "#5a5a5a" }}>
+          <Text
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }}
+            style={{ color: "#5a5a5a" }}
+          >
             Privacy Policy.
           </Text>
         </Text>

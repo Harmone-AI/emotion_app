@@ -17,6 +17,7 @@ import {
 const animalImage = require("@/assets/animal.png");
 const { width, height } = Dimensions.get("window");
 import * as api from "@/api/api";
+import * as Haptics from "expo-haptics";
 
 import {
   ExpoSpeechRecognitionModule,
@@ -181,7 +182,10 @@ export default function HomeScreen({ navigation }: any) {
           }}
         >
           <AppButton
-            onPress={() => navigation.navigate("tasks")}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.navigate("tasks");
+            }}
             style={{ flexDirection: "row", alignItems: "center" }}
           >
             <View
@@ -233,6 +237,7 @@ export default function HomeScreen({ navigation }: any) {
               alignItems: "center",
             }}
             onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               navigation.navigate("stories");
             }}
           >
@@ -353,6 +358,7 @@ export default function HomeScreen({ navigation }: any) {
           >
             <Animated.View
               onTouchStart={(event) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 clickInput();
               }}
               style={{
@@ -396,6 +402,7 @@ export default function HomeScreen({ navigation }: any) {
 
             <Animated.View
               onTouchStart={(event) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 event.stopPropagation();
                 setShowRecording(true);
                 clickAdd();
@@ -450,6 +457,7 @@ export default function HomeScreen({ navigation }: any) {
           >
             <Animated.View
               onTouchStart={(event) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 event.stopPropagation();
                 clickAdd();
               }}
@@ -573,6 +581,7 @@ export default function HomeScreen({ navigation }: any) {
                 ) : (
                   <Animated.View
                     onTouchStart={(event) => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       event.stopPropagation();
                       setRecording(1);
                       handleStart();

@@ -20,6 +20,7 @@ import { useStoryStore } from "@/hooks/zustand/story";
 import { RootStackParamList } from "@/navigation/types";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AppLoading from "@/components/Loading";
+import * as Haptics from "expo-haptics";
 
 export default function StoryDetailScreen() {
   const navigation =
@@ -196,6 +197,7 @@ export default function StoryDetailScreen() {
                       },
                     ]}
                     onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       Alert.alert("", line.split(":")[1].trim() + "?", [
                         {
                           text: "NO",
@@ -355,7 +357,10 @@ export default function StoryDetailScreen() {
         }}
       >
         <AppButton
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.goBack();
+          }}
           style={{
             justifyContent: "center",
             padding: scaleSize(24),
@@ -369,7 +374,9 @@ export default function StoryDetailScreen() {
           />
         </AppButton>
         <AppButton
-          onPress={() => {}}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
           style={{
             minHeight: scaleSize(40),
             minWidth: scaleSize(40),

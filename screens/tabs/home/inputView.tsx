@@ -20,6 +20,7 @@ import {
 import * as api from "@/api/api";
 import CreateView from "../../quest/createView";
 import Loading from "@/components/Loading";
+import * as Haptics from "expo-haptics";
 const animalImage = require("@/assets/animal.png");
 
 export default function InputView({ navigation, onClose }: any) {
@@ -76,6 +77,7 @@ export default function InputView({ navigation, onClose }: any) {
         <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
           <TouchableOpacity
             onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               close();
             }}
           >
@@ -94,6 +96,7 @@ export default function InputView({ navigation, onClose }: any) {
         ></TextInput>
         <TouchableOpacity
           onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             done();
           }}
           style={{

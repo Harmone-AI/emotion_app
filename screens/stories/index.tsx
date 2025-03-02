@@ -17,7 +17,7 @@ import { useScaleSize } from "@/hooks/useScreen";
 import AppButton from "@/components/AppButton";
 import Page from "@/components/Page";
 import { useStoryStore } from "@/hooks/zustand/story";
-
+import * as Haptics from "expo-haptics";
 export default function StoryListScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
   const getStories = useStoryStore((state) => state.getStories);
@@ -79,11 +79,12 @@ export default function StoryListScreen() {
                 return (
                   <AppButton
                     key={story.id}
-                    onPress={() =>
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       navigation.navigate("story", {
                         id: story.id,
-                      })
-                    }
+                      });
+                    }}
                     style={{
                       marginLeft: scaleSize(16),
                       shadowColor: "#e5e5e5",

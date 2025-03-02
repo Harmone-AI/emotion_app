@@ -23,6 +23,7 @@ import {
   Animated,
   StyleSheet,
 } from "react-native";
+import * as Haptics from "expo-haptics";
 const animalImage = require("@/assets/animal.png");
 
 export default function Tasks({ navigation, onClose }: any) {
@@ -170,6 +171,7 @@ export default function Tasks({ navigation, onClose }: any) {
                       marginTop: scaleSize(8),
                     }}
                     onPress={async () => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       useQuestStore.getState().latestQuestId = quest.id;
                       navigation.navigate("quest", {
                         questId: quest.id,

@@ -27,6 +27,7 @@ import Page from "@/components/Page";
 import StorageHelper from "@/hooks/storage";
 import { useQuestStore } from "@/hooks/zustand/quest";
 import AppLoading from "@/components/Loading";
+import * as Haptics from "expo-haptics";
 const animalImage = require("@/assets/animal.png");
 
 export default function KeyboardInputTargetScreen() {
@@ -69,6 +70,7 @@ export default function KeyboardInputTargetScreen() {
         <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
           <TouchableOpacity
             onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               close();
             }}
           >
@@ -127,6 +129,7 @@ export default function KeyboardInputTargetScreen() {
       <AppButton
         disabled={showLoading}
         onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           done();
         }}
         style={{

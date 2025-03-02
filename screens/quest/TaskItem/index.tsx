@@ -37,6 +37,7 @@ import AppLoading from "@/components/Loading";
 import { useToastStore } from "@/hooks/zustand/toast";
 import { useCharacterStore } from "@/hooks/zustand/character";
 import { Shadow } from "react-native-shadow-2";
+import * as Haptics from "expo-haptics";
 
 const ZoomFadeIn = new Keyframe({
   from: { opacity: 0, transform: [{ scale: 0 }] },
@@ -255,6 +256,7 @@ export default React.memo(
               dragAnimatedValue,
               swipeable,
               () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 swipeable.close();
                 setTimeout(() => {
                   setEditing(true);
@@ -262,6 +264,7 @@ export default React.memo(
               },
               async () => {
                 try {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setLoading(true);
                   swipeable.close();
                   const undo = await deleteTask(id);
@@ -385,6 +388,7 @@ export default React.memo(
                 ]}
                 onPress={async () => {
                   try {
+                    Haptics.selectionAsync();
                     setLoading(true);
                     if (isFinalTask) {
                       await finishAllTask(questId);
@@ -392,6 +396,11 @@ export default React.memo(
                     }
                     await finishTask(task?.task_id);
                     onFinishTask?.(isFinalTask);
+                    if (isFinalTask) {
+                      Haptics.notificationAsync(
+                        Haptics.NotificationFeedbackType.Success
+                      );
+                    }
                   } catch (error) {
                     show({
                       message: "The internet connection appears to be offline.",

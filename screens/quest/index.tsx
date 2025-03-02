@@ -47,6 +47,7 @@ import * as FileSystem from "expo-file-system";
 import { Shadow } from "react-native-shadow-2";
 import LottieView from "lottie-react-native";
 import Share from "./Share";
+import * as Haptics from "expo-haptics";
 
 export default function QuestScreen({ route }: any) {
   const scaleSize = useScaleSize();
@@ -423,6 +424,7 @@ export default function QuestScreen({ route }: any) {
                   <AppButton
                     disabled={loading}
                     onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       setFolderFinishedTasks(!folderFinishedTasks);
                     }}
                     style={{
@@ -515,6 +517,7 @@ export default function QuestScreen({ route }: any) {
             left: unFinishTaskIds.length > 0 ? undefined : scaleSize(16),
           }}
           onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             navigation.goBack();
           }}
         >
@@ -541,6 +544,7 @@ export default function QuestScreen({ route }: any) {
               right: scaleSize(16),
             }}
             onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               setReadyToShare(true);
             }}
           >
@@ -570,6 +574,7 @@ export default function QuestScreen({ route }: any) {
                 disabled={loading}
                 onPress={async () => {
                   try {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setLoading(true);
                     await addTask(quest.id, "");
                   } catch (e) {
@@ -659,6 +664,7 @@ export default function QuestScreen({ route }: any) {
                   }}
                   onPress={async () => {
                     try {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       setLoading(true);
                       await post(latestUserInput);
                     } catch (e) {
@@ -705,6 +711,7 @@ export default function QuestScreen({ route }: any) {
                     alignItems: "center",
                   }}
                   onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     confirm(quest.id);
                   }}
                 >
@@ -750,6 +757,7 @@ export default function QuestScreen({ route }: any) {
                 marginBottom: scaleSize(32),
               }}
               onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setFolderFinishedTasks(false);
               }}
             >

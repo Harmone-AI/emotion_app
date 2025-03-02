@@ -7,6 +7,7 @@ import { View, Share as PlatformShare } from "react-native";
 import ViewShot from "react-native-view-shot";
 import Share, { Social } from "react-native-share";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 
 export default React.memo(
   React.forwardRef(
@@ -125,6 +126,7 @@ export default React.memo(
               marginTop: scaleSize(16),
             }}
             onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               onClose();
             }}
           >
@@ -145,6 +147,7 @@ export default React.memo(
           >
             <AppButton
               onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 Share.shareSingle({
                   social: Social.Twitter,
                   url: sharedImageUri.current,
@@ -158,6 +161,7 @@ export default React.memo(
             </AppButton>
             <AppButton
               onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 Share.shareSingle({
                   backgroundImage: "http://urlto.png", // url or an base64 string
                   stickerImage: sharedImageUri.current, //or you can use "data:" url
@@ -176,6 +180,7 @@ export default React.memo(
             </AppButton>
             <AppButton
               onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 Share.shareSingle({
                   social: Social.Instagram,
                   type: "image/*",
@@ -190,6 +195,7 @@ export default React.memo(
             </AppButton>
             <AppButton
               onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 // Share.share({
                 //   url: "",
                 // });
@@ -202,6 +208,7 @@ export default React.memo(
             </AppButton>
             <AppButton
               onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 PlatformShare.share({
                   url: sharedImageUri.current,
                   message: "",
