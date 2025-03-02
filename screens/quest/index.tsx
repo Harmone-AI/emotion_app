@@ -96,11 +96,9 @@ export default function QuestScreen({ route }: any) {
   const unFinishTaskCount = React.useRef(unFinishTaskIds?.length || 0);
   const [folderFinishedTasks, setFolderFinishedTasksOriginal] =
     useState<boolean>(true);
-  console.log("unFinishTaskIds?.length1", unFinishTaskIds?.length);
   const setFolderFinishedTasks = React.useCallback(
     (value: boolean) => {
       setFolderFinishedTasksOriginal(value);
-      console.log("unFinishTaskIds?.length2", unFinishTaskIds?.length);
       if (unFinishTaskIds?.length === 0) {
         if (value) {
           Animated.timing(backgroundScale, {
@@ -191,7 +189,7 @@ export default function QuestScreen({ route }: any) {
   const header = (
     <ReAnimated.View
       style={[
-        unFinishTaskCount.current === 0 && {
+        unFinishTaskIds.length === 0 && {
           justifyContent: "center",
           alignItems: "center",
           alignSelf: "center",
@@ -335,7 +333,7 @@ export default function QuestScreen({ route }: any) {
             minHeight: scaleSize(500),
             flex: 0,
           },
-          unFinishTaskCount.current === 0 && {
+          unFinishTaskIds.length === 0 && {
             flex: 1,
             justifyContent: "center",
           },
@@ -358,12 +356,12 @@ export default function QuestScreen({ route }: any) {
         <KeyboardAvoidingView
           style={[
             { flex: 0 },
-            unFinishTaskCount.current === 0 && {
+            unFinishTaskIds.length === 0 && {
               flex: 1,
             },
           ]}
           contentContainerStyle={[
-            unFinishTaskCount.current === 0 && {
+            unFinishTaskIds.length === 0 && {
               flex: 1,
               justifyContent: "center",
             },
@@ -403,16 +401,15 @@ export default function QuestScreen({ route }: any) {
                       unFinishTaskIds.length === 1 && task.status === 0
                     }
                     onFinishTask={(allFinish) => {
-                      console.log("allFinish", allFinish);
                       if (allFinish) {
-                        setTimeout(() => {
-                          setFolderFinishedTasksOriginal(true);
-                          Animated.timing(backgroundScale, {
-                            toValue: 3,
-                            duration: 500,
-                            useNativeDriver: true,
-                          }).start();
-                        }, 1000);
+                        // setTimeout(() => {
+                        setFolderFinishedTasksOriginal(true);
+                        Animated.timing(backgroundScale, {
+                          toValue: 3,
+                          duration: 500,
+                          useNativeDriver: true,
+                        }).start();
+                        // }, 1000);
                       }
                     }}
                   />

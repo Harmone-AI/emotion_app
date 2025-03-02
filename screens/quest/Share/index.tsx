@@ -100,7 +100,7 @@ export default React.memo(
                   <Image
                     source={{ uri: quest.begin_img }}
                     style={{ width: scaleSize(34), height: scaleSize(34) }}
-                    resizeMode="contain"
+                    contentFit="contain"
                     onLoad={onImageLoad}
                   />
                 </View>
@@ -108,7 +108,7 @@ export default React.memo(
                 <Image
                   source={require("@/assets/images/qr.png")}
                   style={{ width: scaleSize(50), height: scaleSize(50) }}
-                  resizeMode="contain"
+                  contentFit="contain"
                   onLoad={onImageLoad}
                 />
               </View>

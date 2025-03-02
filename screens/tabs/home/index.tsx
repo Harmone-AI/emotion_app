@@ -107,7 +107,6 @@ export default function HomeScreen({ navigation }: any) {
       // rotationAnimatedValue.setValue(0); // 重置旋转
     });
   };
-  const getStories = useStoryStore((state) => state.getStories);
 
   const clickInput = () => {
     navigation.navigate("keyboard-input-target");
@@ -628,21 +627,6 @@ export default function HomeScreen({ navigation }: any) {
             )}
           </View>
         </View>
-
-        {/* <View>
-        {!recognizing ? (
-          <Button title="Start" onPress={handleStart} />
-        ) : (
-          <Button
-            title="Stop"
-            onPress={() => ExpoSpeechRecognitionModule.stop()}
-          />
-        )}
-
-        <ScrollView>
-          <Text>{transcript}</Text>
-        </ScrollView>
-      </View> */}
       </SafeAreaView>
     </View>
   );

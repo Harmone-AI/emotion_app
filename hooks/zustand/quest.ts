@@ -88,6 +88,12 @@ export const useQuestStore = create<QuestState>()(
         });
       },
       patchTask: async (taskId: number, params: Partial<api.Task>) => {
+        // if (__DEV__) {
+        //   set((state) => {
+        //     state.taskMap[res.task_id!].status = 1;
+        //   });
+        //   return;
+        // }
         const res = await api.patch_task(taskId, params);
         set((state) => {
           state.taskMap[res.task_id!] = res;
@@ -149,6 +155,12 @@ export const useQuestStore = create<QuestState>()(
         });
       },
       finishAllTask: async (questId: number) => {
+        // if (__DEV__) {
+        //   set((state) => {
+        //     state.questMap[questId].status = 1;
+        //   });
+        //   return;
+        // }
         const quest = await api.complete_all_task(questId);
         set((state) => {
           state.questMap[questId] = { ...state.questMap[questId], ...quest };
