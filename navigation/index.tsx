@@ -27,6 +27,7 @@ import * as SplashScreen from "expo-splash-screen";
 import KeyboardInputTargetScreen from "@/screens/tabs/home/KeyboardInputTarget";
 import TestScreen from "@/screens/TestScreen";
 import QuestScreen from "@/screens/quest";
+import RedditShareExample from "@/screens/RedditShareExample";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -149,6 +150,11 @@ export default function Navigation() {
             />
 
             <Stack.Screen name="test" component={TestScreen} />
+            <Stack.Screen 
+              name="reddit-share-example" 
+              component={RedditShareExample}
+              options={{ title: "Reddit Share Example" }}
+            />
           </Stack.Group>
         </>
         {/* )} */}

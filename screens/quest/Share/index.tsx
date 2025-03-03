@@ -181,21 +181,6 @@ export default React.memo(
             <AppButton
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                Share.shareSingle({
-                  social: Social.Instagram,
-                  type: "image/*",
-                  url: sharedImageUri.current,
-                });
-              }}
-            >
-              <Image
-                source={require("@/assets/images/instagram.svg")}
-                style={{ width: scaleSize(60), height: scaleSize(60) }}
-              />
-            </AppButton>
-            <AppButton
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 // Share.share({
                 //   url: "",
                 // });
@@ -209,16 +194,111 @@ export default React.memo(
             <AppButton
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                // Directly share to Reddit using our custom function
+                import("@/utils/redditAuth").then(({ shareImageToReddit }) => {
+                  shareImageToReddit(
+                    sharedImageUri.current,
+                    quest.quest_title || "Check out my Harmone AI emotion!"
+                  );
+                });
+              }}
+            >
+              <View
+                style={{
+                  width: scaleSize(60),
+                  height: scaleSize(60),
+                  borderRadius: scaleSize(30),
+                  overflow: 'hidden',
+                  borderWidth: 1,
+                  borderColor: '#e0e0e0'
+                }}
+              >
+                <Image
+                  source={require("@/assets/images/reddit.svg")}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              </View>
+            </AppButton>
+            <AppButton
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                // Directly open TikTok app
+                import("@/utils/tiktokShare").then(({ directOpenTikTok }) => {
+                  directOpenTikTok(
+                    sharedImageUri.current,
+                    quest.quest_title || "Check out my Harmone AI emotion! #HarmoneAI #EmotionAI"
+                  );
+                });
+              }}
+            >
+              <View
+                style={{
+                  width: scaleSize(60),
+                  height: scaleSize(60),
+                  borderRadius: scaleSize(30),
+                  overflow: 'hidden',
+                  borderWidth: 1,
+                  borderColor: '#e0e0e0'
+                }}
+              >
+                <Image
+                  source={require("./tiktok.jpg")}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              </View>
+            </AppButton>
+            <AppButton
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                // Directly open Instagram app
+                import("@/utils/instagramShare").then(({ directOpenInstagram }) => {
+                  directOpenInstagram(
+                    sharedImageUri.current,
+                    quest.quest_title || "Check out my Harmone AI emotion! #HarmoneAI #EmotionAI"
+                  );
+                });
+              }}
+            >
+              <View
+                style={{
+                  width: scaleSize(60),
+                  height: scaleSize(60),
+                  borderRadius: scaleSize(30),
+                  overflow: 'hidden',
+                  borderWidth: 1,
+                  borderColor: '#e0e0e0'
+                }}
+              >
+                <Image
+                  source={require("@/assets/images/instagram.svg")}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              </View>
+            </AppButton>
+            <AppButton
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 PlatformShare.share({
                   url: sharedImageUri.current,
                   message: "",
                 });
               }}
             >
-              <Image
-                source={require("../more.svg")}
-                style={{ width: scaleSize(60), height: scaleSize(60) }}
-              />
+              <View
+                style={{
+                  width: scaleSize(60),
+                  height: scaleSize(60),
+                  borderRadius: scaleSize(30),
+                  overflow: 'hidden',
+                  borderWidth: 1,
+                  borderColor: '#e0e0e0'
+                }}
+              >
+                <Image
+                  source={require("../more.svg")}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              </View>
             </AppButton>
           </View>
         </View>

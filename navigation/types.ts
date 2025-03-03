@@ -25,6 +25,7 @@ export type RootStackParamList = {
   };
   "keyboard-input-target": undefined;
   test: undefined;
+  "reddit-share-example": undefined;
 };
 
 export type RootStackNavigationProp =

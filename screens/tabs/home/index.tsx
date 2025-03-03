@@ -637,6 +637,31 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </View>
       </SafeAreaView>
+      
+      {/* 测试Reddit分享功能的按钮 */}
+      {__DEV__ && (
+        <View style={{ position: 'absolute', bottom: 100, right: 20 }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#FF4500',
+              paddingVertical: 10,
+              paddingHorizontal: 15,
+              borderRadius: 20,
+              elevation: 3,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 2,
+            }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.navigate('reddit-share-example');
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>测试Reddit分享</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
