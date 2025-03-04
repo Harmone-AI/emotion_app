@@ -30,7 +30,6 @@ export default function StoryDetailScreen() {
     state.stories.find((story) => story.id === route.params?.id)
   );
   const disableSelect = useRef(story?.choice >= 0);
-  console.log("story", JSON.stringify(story));
   const scaleSize = useScaleSize();
   const safeAreaInsets = useSafeAreaInsets();
 
@@ -99,21 +98,9 @@ export default function StoryDetailScreen() {
     }
     return [newContentLines, map];
   }, [story?.story_content]);
-  const [selectedChoice, setSelectedChoice] = React.useState<string | null>(
-    Object.keys(choicesMap)[story?.choice]
-  );
-  console.log("selectedChoice", selectedChoice, story?.choice);
-  // return (
-  //   <ScrollView
-  //     style={{ flex: 1 }}
-  //     contentContainerStyle={{ paddingVertical: scaleSize(100) }}
-  //   >
-  //     <HBase>{story.story_content}</HBase>
-  //   </ScrollView>
-  // );
+  const selectedChoice = Object.keys(choicesMap)[story?.choice];
   const [loading, setLoading] = React.useState(false);
   const patch = useStoryStore((state) => state.patch);
-  console.log("disableSelect", disableSelect.current);
   return (
     <View style={{ flex: 1, backgroundColor: "#F2EFE2" }}>
       <ScrollView
@@ -188,6 +175,7 @@ export default function StoryDetailScreen() {
                         flexDirection: "row",
                         alignItems: "center",
                         marginTop: scaleSize(12),
+                        width: scaleSize(354),
                       },
                       selectedChoice === line && {
                         borderRadius: 12,
@@ -234,7 +222,6 @@ export default function StoryDetailScreen() {
                             lineHeight: 20,
                             textTransform: "capitalize",
                             opacity: 0.5,
-                            width: scaleSize(338),
                           },
                           selectedChoice === line && {
                             color: "white",
