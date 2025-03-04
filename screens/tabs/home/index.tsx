@@ -18,7 +18,7 @@ const animalImage = require("@/assets/animal.png");
 const { width, height } = Dimensions.get("window");
 import * as api from "@/api/api";
 import * as Haptics from "expo-haptics";
-
+import { useEvent } from "expo";
 import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
@@ -38,6 +38,7 @@ import Timer from "./Timer";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { useStoryStore } from "@/hooks/zustand/story";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
@@ -144,6 +145,14 @@ export default function HomeScreen({ navigation }: any) {
     }
   }, [latestStoryAvailableAt, lastStoryFetchTime]);
   useFocusEffect(checkLatestStoryAvailable);
+  const player = useVideoPlayer(require("./character.mov"), (player) => {
+    player.loop = true;
+    player.play();
+  });
+
+  const { isPlaying } = useEvent(player, "playingChange", {
+    isPlaying: player.playing,
+  });
   return (
     <View
       style={{
@@ -323,20 +332,44 @@ export default function HomeScreen({ navigation }: any) {
               >
                 I will come back later.
               </HBase>
-              <Image
+              <View
                 style={{
                   width: scaleSize(312),
                   height: scaleSize(300),
                   marginTop: scaleSize(-10),
                 }}
-                source={require("./fire.png")}
-              ></Image>
+              >
+                <VideoView
+                  style={{
+                    width: scaleSize(800),
+                    height: scaleSize(800),
+                    alignSelf: "center",
+                    marginRight: scaleSize(60),
+                    marginBottom: scaleSize(160),
+                    // backgroundColor: "transparent",
+                  }}
+                  player={player}
+                  allowsFullscreen
+                  allowsPictureInPicture
+                  nativeControls={false}
+                />
+              </View>
             </View>
           ) : (
-            <Image
-              style={{ width: scaleSize(273), height: scaleSize(371) }}
-              source={animalImage}
-            ></Image>
+            <VideoView
+              style={{
+                width: scaleSize(600),
+                height: scaleSize(600),
+                alignSelf: "center",
+                marginRight: scaleSize(0),
+                marginBottom: scaleSize(0),
+                // backgroundColor: "transparent",
+              }}
+              player={player}
+              allowsFullscreen
+              allowsPictureInPicture
+              nativeControls={false}
+            />
           )}
         </View>
         <View
@@ -637,28 +670,30 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </View>
       </SafeAreaView>
-      
+
       {/* 测试Reddit分享功能的按钮 */}
       {__DEV__ && (
-        <View style={{ position: 'absolute', bottom: 100, right: 20 }}>
+        <View style={{ position: "absolute", bottom: 100, right: 20 }}>
           <TouchableOpacity
             style={{
-              backgroundColor: '#FF4500',
+              backgroundColor: "#FF4500",
               paddingVertical: 10,
               paddingHorizontal: 15,
               borderRadius: 20,
               elevation: 3,
-              shadowColor: '#000',
+              shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.3,
               shadowRadius: 2,
             }}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              navigation.navigate('reddit-share-example');
+              navigation.navigate("reddit-share-example");
             }}
           >
-            <Text style={{ color: '#fff', fontWeight: 'bold' }}>测试Reddit分享</Text>
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>
+              测试Reddit分享
+            </Text>
           </TouchableOpacity>
         </View>
       )}
