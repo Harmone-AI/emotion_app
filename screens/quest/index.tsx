@@ -413,6 +413,7 @@ export default function QuestScreen({ route }: any) {
                         // }, 1000);
                       }
                     }}
+                    confirmed={quest.confirmed}
                   />
                 );
               })}
@@ -479,6 +480,7 @@ export default function QuestScreen({ route }: any) {
                         setFolderFinishedTasks(true);
                       }
                     }}
+                    confirmed={quest.confirmed}
                   />
                 );
               })}

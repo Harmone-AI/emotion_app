@@ -191,12 +191,14 @@ export default React.memo(
     isFinalTask,
     questId,
     onFinishTask,
+    confirmed,
   }: {
     id: number;
     task: Task;
     isFinalTask: boolean;
     questId: number;
     onFinishTask?: (allFinish: boolean) => void;
+    confirmed: boolean;
   }) => {
     const scaleSize = useScaleSize();
     const inputRef = React.useRef<TextInput>(null);
@@ -371,6 +373,7 @@ export default React.memo(
               <AppLoading width={scaleSize(32)} height={scaleSize(32)} />
             ) : (
               <AppButton
+                disabled={!confirmed}
                 style={[
                   {
                     borderColor: "#e0e0e0",
