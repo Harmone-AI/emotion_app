@@ -373,7 +373,6 @@ export default React.memo(
               <AppLoading width={scaleSize(32)} height={scaleSize(32)} />
             ) : (
               <AppButton
-                disabled={!confirmed}
                 style={[
                   {
                     borderColor: "#e0e0e0",
@@ -391,6 +390,10 @@ export default React.memo(
                 ]}
                 onPress={async () => {
                   try {
+                    if (!confirmed) {
+                      onFinishTask?.(isFinalTask);
+                      return;
+                    }
                     Haptics.selectionAsync();
                     setLoading(true);
                     if (isFinalTask) {

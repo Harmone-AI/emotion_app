@@ -146,13 +146,19 @@ export default function HomeScreen({ navigation }: any) {
   }, [latestStoryAvailableAt, lastStoryFetchTime]);
   useFocusEffect(checkLatestStoryAvailable);
   const player = useVideoPlayer(require("./character.mov"), (player) => {
-    player.loop = true;
+    player.muted = true;
+    player.allowsExternalPlayback = false;
+    player.play();
+  });
+  const firePlayer = useVideoPlayer(require("./fire.mov"), (player) => {
+    player.muted = true;
+    player.allowsExternalPlayback = false;
     player.play();
   });
 
-  const { isPlaying } = useEvent(player, "playingChange", {
-    isPlaying: player.playing,
-  });
+  // const { isPlaying } = useEvent(player, "playingChange", {
+  //   isPlaying: player.playing,
+  // });
   return (
     <View
       style={{
@@ -348,20 +354,21 @@ export default function HomeScreen({ navigation }: any) {
                     marginBottom: scaleSize(160),
                     // backgroundColor: "transparent",
                   }}
-                  player={player}
+                  player={firePlayer}
                   allowsFullscreen
                   allowsPictureInPicture
                   nativeControls={false}
+                  pointerEvents="none"
                 />
               </View>
             </View>
           ) : (
             <VideoView
               style={{
-                width: scaleSize(600),
-                height: scaleSize(600),
+                width: scaleSize(700),
+                height: scaleSize(700),
                 alignSelf: "center",
-                marginRight: scaleSize(0),
+                marginLeft: scaleSize(30),
                 marginBottom: scaleSize(0),
                 // backgroundColor: "transparent",
               }}
@@ -369,6 +376,7 @@ export default function HomeScreen({ navigation }: any) {
               allowsFullscreen
               allowsPictureInPicture
               nativeControls={false}
+              pointerEvents="none"
             />
           )}
         </View>

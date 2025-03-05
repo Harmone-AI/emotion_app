@@ -83,6 +83,55 @@ export default function QuestScreen({ route }: any) {
     return finishedCount / (quest?.taskids.split(",").length || 0);
   }, [finishedCount, quest]);
   const insets = useSafeAreaInsets();
+  // Add shake animation
+  const shakeAnimation = useAnimatedValue(0);
+
+  const startShakeAnimation = () => {
+    // Reset the animation value
+    shakeAnimation.setValue(0);
+
+    // Create a sequence of small movements to create a shake effect
+    Animated.sequence([
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -10,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 5,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -5,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 0,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Trigger haptic feedback for better user experience
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+  };
 
   const finishTaskIds = React.useMemo(() => {
     return taskIds.filter((id) => {
@@ -402,6 +451,10 @@ export default function QuestScreen({ route }: any) {
                       unFinishTaskIds.length === 1 && task.status === 0
                     }
                     onFinishTask={(allFinish) => {
+                      if (!quest.confirmed) {
+                        startShakeAnimation();
+                        return;
+                      }
                       if (allFinish) {
                         // setTimeout(() => {
                         setFolderFinishedTasksOriginal(true);
@@ -693,43 +746,47 @@ export default function QuestScreen({ route }: any) {
                     </HBase>
                   )}
                 </AppButton>
-                <AppButton
-                  disabled={loading}
-                  style={{
-                    marginLeft: scaleSize(8),
-                    shadowColor: "#b49300",
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowRadius: 0,
-                    elevation: 0,
-                    shadowOpacity: 1,
-                    borderRadius: 12,
-                    backgroundColor: "#FF7C14",
-                    width: scaleSize(165),
-                    height: scaleSize(40),
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    confirm(quest.id);
-                  }}
+                <Animated.View
+                  style={{ transform: [{ translateX: shakeAnimation }] }}
                 >
-                  <HBase
+                  <AppButton
+                    disabled={loading}
                     style={{
-                      fontSize: scaleSize(15),
-                      textTransform: "uppercase",
-                      fontWeight: "700",
-                      fontFamily: "SF Pro Rounded",
-                      color: "#fff",
-                      textAlign: "left",
+                      marginLeft: scaleSize(8),
+                      shadowColor: "#b49300",
+                      shadowOffset: {
+                        width: 0,
+                        height: 2,
+                      },
+                      shadowRadius: 0,
+                      elevation: 0,
+                      shadowOpacity: 1,
+                      borderRadius: 12,
+                      backgroundColor: "#FF7C14",
+                      width: scaleSize(165),
+                      height: scaleSize(40),
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      confirm(quest.id);
                     }}
                   >
-                    confirm
-                  </HBase>
-                </AppButton>
+                    <HBase
+                      style={{
+                        fontSize: scaleSize(15),
+                        textTransform: "uppercase",
+                        fontWeight: "700",
+                        fontFamily: "SF Pro Rounded",
+                        color: "#fff",
+                        textAlign: "left",
+                      }}
+                    >
+                      confirm
+                    </HBase>
+                  </AppButton>
+                </Animated.View>
               </>
             )}
           </ReAnimated.View>
