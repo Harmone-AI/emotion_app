@@ -145,16 +145,24 @@ export default function HomeScreen({ navigation }: any) {
     }
   }, [latestStoryAvailableAt, lastStoryFetchTime]);
   useFocusEffect(checkLatestStoryAvailable);
+  const isOnATrip = new Date(latestStoryAvailableAt) > new Date();
   const player = useVideoPlayer(require("./character.mov"), (player) => {
+    player.loop = true;
     player.muted = true;
     player.allowsExternalPlayback = false;
     player.play();
   });
-  const firePlayer = useVideoPlayer(require("./fire.mov"), (player) => {
+  React.useEffect(() => {
+    if (isOnATrip) {
+      player.replace(require("./fire.mov"));
+    } else {
+      player.replace(require("./character.mov"));
+    }
+    player.loop = true;
     player.muted = true;
     player.allowsExternalPlayback = false;
     player.play();
-  });
+  }, [isOnATrip]);
 
   // const { isPlaying } = useEvent(player, "playingChange", {
   //   isPlaying: player.playing,
@@ -343,6 +351,8 @@ export default function HomeScreen({ navigation }: any) {
                   width: scaleSize(312),
                   height: scaleSize(300),
                   marginTop: scaleSize(-10),
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
               >
                 <VideoView
@@ -354,9 +364,9 @@ export default function HomeScreen({ navigation }: any) {
                     marginBottom: scaleSize(160),
                     // backgroundColor: "transparent",
                   }}
-                  player={firePlayer}
-                  allowsFullscreen
-                  allowsPictureInPicture
+                  player={player}
+                  allowsFullscreen={false}
+                  allowsPictureInPicture={false}
                   nativeControls={false}
                   pointerEvents="none"
                 />
@@ -373,8 +383,8 @@ export default function HomeScreen({ navigation }: any) {
                 // backgroundColor: "transparent",
               }}
               player={player}
-              allowsFullscreen
-              allowsPictureInPicture
+              allowsFullscreen={false}
+              allowsPictureInPicture={false}
               nativeControls={false}
               pointerEvents="none"
             />
