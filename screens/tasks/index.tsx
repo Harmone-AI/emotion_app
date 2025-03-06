@@ -84,7 +84,7 @@ export default function Tasks({ navigation, onClose }: any) {
   const questMap = useQuestStore((state) => state.questMap);
   const questsByDate = React.useMemo(() => {
     const newQuestsArray: Quest[][] = [[]];
-    const sortedKeys = Object.keys(questMap)
+    Object.keys(questMap)
       .sort((a, b) => (Number(a) > Number(b) ? -1 : 1))
       .forEach((key) => {
         const quest = questMap[key];

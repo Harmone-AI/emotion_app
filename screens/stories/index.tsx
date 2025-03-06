@@ -95,22 +95,27 @@ export default function StoryListScreen() {
                       shadowRadius: 0,
                       elevation: 0,
                       shadowOpacity: 1,
-                      borderRadius: 12,
+                      borderRadius: Math.floor(scaleSize(12)),
                       backgroundColor: "#fff",
                       borderColor: "#e5e5e5",
                       borderWidth: 2,
                       borderStyle: "solid",
-                      width: scaleSize(312),
+                      width: scaleSize(310),
                       height: scaleSize(238),
                       marginTop: scaleSize(12),
                     }}
                   >
-                    <View>
+                    <View
+                      style={{
+                        overflow: "hidden",
+                        borderRadius: Math.floor(scaleSize(12)),
+                      }}
+                    >
                       {/* Story Image */}
                       <Image
                         source={{ uri: story.head_img }}
                         style={{
-                          width: scaleSize(310),
+                          width: scaleSize(306),
                           height: scaleSize(153),
                         }}
                       />

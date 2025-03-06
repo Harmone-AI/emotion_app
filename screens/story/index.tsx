@@ -153,6 +153,7 @@ export default function StoryDetailScreen() {
               height: scaleSize(153),
               marginTop: scaleSize(16),
               alignSelf: "center",
+              borderRadius: scaleSize(12),
             }}
           />
           {/* Story Content */}

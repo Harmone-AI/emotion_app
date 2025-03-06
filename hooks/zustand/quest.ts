@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import storage, { zustandStorage } from "../storage";
 import { immer } from "zustand/middleware/immer";
 import { useStoryStore } from "./story";
+import { Quest } from "@/api/api";
 
 interface QuestState {
   latestUserInput: string;
@@ -19,6 +20,7 @@ interface QuestState {
   patchTask: (taskId: number, params: Partial<api.Task>) => Promise<void>;
   get: () => Promise<void>;
   finishAllTask: (questId: number) => Promise<void>;
+  getSortedQuests: () => Quest[][];
 }
 
 export const useQuestStore = create<QuestState>()(
@@ -169,6 +171,23 @@ export const useQuestStore = create<QuestState>()(
           });
         });
       },
+      getSortedQuests: () => {
+        const newQuestsArray: Quest[][] = [[]];
+        Object.keys(get().questMap)
+          .sort((a, b) => (Number(a) > Number(b) ? -1 : 1))
+          .forEach((key) => {
+            const quest = get().questMap[key];
+            if (
+              newQuestsArray[newQuestsArray.length - 1]?.[0]?.created_at ===
+              quest.created_at
+            ) {
+              newQuestsArray[newQuestsArray.length - 1].push(quest);
+            } else {
+              newQuestsArray.push([quest]);
+            }
+          });
+        return newQuestsArray;
+      },
     })),
     {
       name: "quest-storage", // name of the item in the storage (must be unique)
@@ -176,3 +195,23 @@ export const useQuestStore = create<QuestState>()(
     }
   )
 );
+
+// Selector for sorted quests - will automatically update when questMap changes
+export const useSortedQuests = () =>
+  useQuestStore((state) => {
+    const newQuestsArray: Quest[][] = [[]];
+    Object.keys(state.questMap)
+      .sort((a, b) => (Number(a) > Number(b) ? -1 : 1))
+      .forEach((key) => {
+        const quest = state.questMap[key];
+        if (
+          newQuestsArray[newQuestsArray.length - 1]?.[0]?.created_at ===
+          quest.created_at
+        ) {
+          newQuestsArray[newQuestsArray.length - 1].push(quest);
+        } else {
+          newQuestsArray.push([quest]);
+        }
+      });
+    return newQuestsArray;
+  });
