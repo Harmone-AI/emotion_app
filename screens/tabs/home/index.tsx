@@ -30,7 +30,7 @@ import { useScaleSize } from "@/hooks/useScreen";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AppLoading from "@/components/Loading";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useQuestStore } from "@/hooks/zustand/quest";
+import { useQuestStore, useSortedQuests } from "@/hooks/zustand/quest";
 import { HBase } from "@/components/HBase";
 import React from "react";
 import { useCharacterStore } from "@/hooks/zustand/character";
@@ -39,6 +39,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { useStoryStore } from "@/hooks/zustand/story";
 import { useVideoPlayer, VideoView } from "expo-video";
+import { Quest } from "@/api/api";
+import { LinearGradient } from "expo-linear-gradient";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
@@ -167,6 +169,21 @@ export default function HomeScreen({ navigation }: any) {
   // const { isPlaying } = useEvent(player, "playingChange", {
   //   isPlaying: player.playing,
   // });
+  const questMap = useQuestStore((state) => state.questMap);
+  const quests = React.useMemo(() => {
+    const newQuestsArray: Quest[] = [];
+    Object.keys(questMap)
+      .sort((a, b) => (Number(a) > Number(b) ? -1 : 1))
+      .every((key) => {
+        const quest = questMap[key];
+        newQuestsArray.push(quest);
+        if (newQuestsArray.length > 3) {
+          return false;
+        }
+        return true;
+      });
+    return newQuestsArray;
+  }, [questMap]);
   return (
     <View
       style={{
@@ -220,25 +237,117 @@ export default function HomeScreen({ navigation }: any) {
                 borderBottomRightRadius: 20,
               }}
             >
-              <View
-                style={{
-                  borderRadius: 10,
-                  backgroundColor: "#fff",
-                  borderStyle: "solid",
-                  borderColor: "rgba(0, 0, 0, 0.1)",
-                  borderWidth: 1,
-                  width: scaleSize(56),
-                  height: scaleSize(56),
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Image
-                  source={require("@/screens/tasks/head.png")}
-                  contentFit="contain"
-                  style={{ width: scaleSize(46), height: scaleSize(46) }}
-                />
-              </View>
+              {quests?.length > 0 ? (
+                <View
+                  style={{
+                    width: scaleSize(94 + 56),
+                    height: "100%",
+                    backgroundColor: "red",
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  {quests.map((quest, index, array) => {
+                    if (index !== 0) {
+                      return (
+                        <LinearGradient
+                          key={quest.id}
+                          colors={[
+                            `rgba(0, 0, 0, ${index === 3 ? 0.5 : 0.1})`,
+                            "rgba(0, 0, 0, 0)",
+                          ]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 0 }}
+                          style={{
+                            zIndex: array.length - index,
+                            borderRadius: scaleSize(10),
+                            backgroundColor: "#fff",
+                            borderStyle: "solid",
+                            borderColor: "rgba(0, 0, 0, 0.1)",
+                            borderWidth: scaleSize(1),
+                            width: scaleSize(56),
+                            height: scaleSize(56),
+                            transform: [
+                              {
+                                scale: index === 3 ? 45 / 56 : 1,
+                              },
+                            ],
+                            justifyContent: "center",
+                            alignItems: "center",
+                            position: "absolute",
+                            left: [
+                              0,
+                              scaleSize(39),
+                              scaleSize(23 + 56),
+                              scaleSize(23 + 56 + 16),
+                            ][index],
+                          }}
+                        >
+                          <Image
+                            key={index}
+                            source={{ uri: quest.end_img }}
+                            contentFit="contain"
+                            style={{
+                              width: scaleSize(46),
+                              height: scaleSize(46),
+                            }}
+                          />
+                        </LinearGradient>
+                      );
+                    }
+                    return (
+                      <View
+                        key={quest.id}
+                        style={{
+                          zIndex: array.length - index,
+                          borderRadius: 10,
+                          backgroundColor: "#fff",
+                          borderStyle: "solid",
+                          borderColor: "rgba(0, 0, 0, 0.1)",
+                          borderWidth: 1,
+                          width: scaleSize(56),
+                          height: scaleSize(56),
+                          justifyContent: "center",
+                          alignItems: "center",
+                          position: "absolute",
+                          left: index * scaleSize(56 - 26),
+                        }}
+                      >
+                        <Image
+                          key={index}
+                          source={{ uri: quest.end_img }}
+                          contentFit="contain"
+                          style={{
+                            width: scaleSize(46),
+                            height: scaleSize(46),
+                          }}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              ) : (
+                <View
+                  style={{
+                    borderRadius: 10,
+                    backgroundColor: "#fff",
+                    borderStyle: "solid",
+                    borderColor: "rgba(0, 0, 0, 0.1)",
+                    borderWidth: 1,
+                    width: scaleSize(56),
+                    height: scaleSize(56),
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Image
+                    source={require("@/assets/animal.png")}
+                    contentFit="contain"
+                    style={{ width: scaleSize(46), height: scaleSize(46) }}
+                  />
+                </View>
+              )}
+
               <Image
                 source={require("./more.svg")}
                 style={{
