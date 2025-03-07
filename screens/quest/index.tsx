@@ -236,7 +236,7 @@ export default function QuestScreen({ route }: any) {
   const onImageLoad = useCallback(() => {
     ref.current?.capture?.();
   }, []);
-  const header = (
+  const header = (width: number = 330) => (
     <ReAnimated.View
       style={[
         unFinishTaskIds.length === 0 && {
@@ -290,7 +290,7 @@ export default function QuestScreen({ route }: any) {
             borderStyle: "solid",
             borderColor: "#f8b200",
             borderWidth: scaleSize(2),
-            width: scaleSize(338), //100
+            width: scaleSize(width + 8), //100
             height: scaleSize(24), //8
             alignSelf: "center",
             marginTop: scaleSize(20),
@@ -303,7 +303,7 @@ export default function QuestScreen({ route }: any) {
           style={{
             borderRadius: scaleSize(26),
             backgroundColor: "#ffd000",
-            width: scaleSize(percent * 330),
+            width: scaleSize(percent * width),
             height: "100%",
             overflow: "hidden",
             justifyContent: "center",
@@ -434,7 +434,7 @@ export default function QuestScreen({ route }: any) {
             onScroll={onScrollHandler}
           >
             {headerBackground}
-            {header}
+            {header()}
             <GestureHandlerRootView style={{ marginTop: scaleSize(40) }}>
               {unFinishTaskIds?.map((id, index) => {
                 const task = tasks?.[Number(id)];

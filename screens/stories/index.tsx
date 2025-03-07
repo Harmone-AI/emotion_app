@@ -18,6 +18,7 @@ import AppButton from "@/components/AppButton";
 import Page from "@/components/Page";
 import { useStoryStore } from "@/hooks/zustand/story";
 import * as Haptics from "expo-haptics";
+import { useHeaderHeight } from "@react-navigation/elements";
 export default function StoryListScreen() {
   const navigation = useNavigation<RootStackNavigationProp>();
   const getStories = useStoryStore((state) => state.getStories);
@@ -38,12 +39,16 @@ export default function StoryListScreen() {
     getStories();
   }, []);
   const scaleSize = useScaleSize();
+  const headerHeight = useHeaderHeight();
   return (
     <Page
       safeAreaProps={{
         edges: ["bottom"],
       }}
       contentContainerStyle={{ paddingVertical: scaleSize(8) }}
+      style={{
+        paddingTop: headerHeight,
+      }}
     >
       {Object.entries(storyMapByDate).map(([date, stories], dateIndex) => {
         const dateObj = new Date(date);
@@ -117,6 +122,7 @@ export default function StoryListScreen() {
                         style={{
                           width: scaleSize(306),
                           height: scaleSize(153),
+                          backgroundColor: "#E4E4E4",
                         }}
                       />
 

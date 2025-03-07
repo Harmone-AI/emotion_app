@@ -4,9 +4,8 @@ import { HBase } from "@/components/HBase";
 import Page from "@/components/Page";
 import { useScaleSize } from "@/hooks/useScreen";
 import { useQuestStore } from "@/hooks/zustand/quest";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useHeaderHeight } from "@react-navigation/elements";
 
-import { Portal } from "@gorhom/portal";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Image } from "expo-image";
@@ -104,6 +103,7 @@ export default function Tasks({ navigation, onClose }: any) {
     get();
   }, []);
   const getTaskByQuestId = useQuestStore((state) => state.getTaskByQuestId);
+  const headerHeight = useHeaderHeight();
   return (
     <Page
       contentContainerStyle={
@@ -113,6 +113,9 @@ export default function Tasks({ navigation, onClose }: any) {
       }
       safeAreaProps={{
         edges: ["bottom"],
+      }}
+      style={{
+        paddingTop: headerHeight,
       }}
     >
       {questsByDate.map((dateArray, dateIndex) => {
@@ -211,9 +214,9 @@ export default function Tasks({ navigation, onClose }: any) {
                     >
                       {quest.quest_title}
                     </Text>
-                    <View style={styles.wrapper}>
+                    {/* <View style={styles.wrapper}>
                       <Text style={[styles.text, styles.textTypo]}>03.06</Text>
-                    </View>
+                    </View> */}
                   </AppButton>
                 );
               })}

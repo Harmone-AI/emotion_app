@@ -1,7 +1,6 @@
 import PopView from "@/components/PopView";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { Portal } from "@gorhom/portal";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useRef, useState } from "react";
@@ -18,7 +17,6 @@ import {
   TextInput,
 } from "react-native";
 import * as api from "@/api/api";
-import CreateView from "../../quest/createView";
 import Loading from "@/components/Loading";
 import * as Haptics from "expo-haptics";
 const animalImage = require("@/assets/animal.png");
@@ -113,18 +111,6 @@ export default function InputView({ navigation, onClose }: any) {
           <Text style={{ color: "#fff" }}>DONE</Text>
         </TouchableOpacity>
       </SafeAreaView>
-
-      {showCreateView && (
-        <PopView>
-          <CreateView
-            userInput={userInput}
-            taskids={taskids}
-            onClose={() => {
-              setShowCreateView(false);
-            }}
-          ></CreateView>
-        </PopView>
-      )}
     </View>
   );
 }

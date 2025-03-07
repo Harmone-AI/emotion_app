@@ -162,9 +162,16 @@ export default function HomeScreen({ navigation }: any) {
     }
     player.loop = true;
     player.muted = true;
-    player.allowsExternalPlayback = false;
     player.play();
   }, [isOnATrip]);
+  useFocusEffect(
+    React.useCallback(() => {
+      player.play();
+      return () => {
+        player.pause();
+      };
+    }, [])
+  );
 
   // const { isPlaying } = useEvent(player, "playingChange", {
   //   isPlaying: player.playing,

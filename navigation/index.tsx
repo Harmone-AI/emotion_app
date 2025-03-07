@@ -3,19 +3,21 @@ import {
   DrawerContentScrollView,
   createDrawerNavigator,
 } from "@react-navigation/drawer";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createStackNavigator } from "@react-navigation/stack";
 import * as React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
 
 import SignInScreen from "../screens/auth/SignInScreen";
 import StoryDetailScreen from "../screens/story";
 import StoryListScreen from "../screens/stories";
 import AddGoalScreen from "../screens/tabs/AddGoalScreen";
 import HomeScreen from "../screens/tabs/home";
-import TaskListScreen from "../screens/TaskListScreen";
-import TaskCompletionScreen from "../screens/TaskCompletionScreen";
 import { DrawerParamList, RootStackParamList } from "./types";
 import { PostHogProvider } from "posthog-react-native";
 import Tasks from "@/screens/tasks";
@@ -25,9 +27,9 @@ import { useScaleSize } from "@/hooks/useScreen";
 import { supabase } from "@/hooks/supabase";
 import * as SplashScreen from "expo-splash-screen";
 import KeyboardInputTargetScreen from "@/screens/tabs/home/KeyboardInputTarget";
-import TestScreen from "@/screens/TestScreen";
+import TestScreen from "@/screens/test/TestScreen";
 import QuestScreen from "@/screens/quest";
-import RedditShareExample from "@/screens/RedditShareExample";
+import RedditShareExample from "@/screens/test/RedditShareExample";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -54,11 +56,12 @@ export default function Navigation() {
   React.useEffect(() => {
     initBySession();
   }, []);
+  const scheme = useColorScheme();
   if (initialRouteName === undefined) {
     return null;
   }
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={scheme === "dark" ? DarkTheme : DefaultTheme}>
       {/* <PostHogProvider
         apiKey="phc_oRAcPnb1Mt5vy38HacooO5Mq6qmtBxfa6D0DjYnevFM"
         options={{
@@ -92,6 +95,25 @@ export default function Navigation() {
       > */}
       <Stack.Navigator
         initialRouteName={__DEV__ ? initialRouteName : initialRouteName}
+        screenOptions={{
+          headerBackImageSource: require("@/assets/images/back.png"),
+          headerBackTitle: "",
+          headerShadowVisible: true,
+          headerBackButtonDisplayMode: "minimal",
+          headerTintColor: "#D0D0D0",
+          headerTitleStyle: {
+            color: "#4F4F4F",
+          },
+          // headerSearchBarOptions: {
+          //   tintColor: "#E0E0E0",
+          // },
+          // headerTintColor: "#E0E0E0",
+          headerTransparent: true,
+          headerBlurEffect: "regular",
+          headerStyle: {
+            backgroundColor: "transparent",
+          },
+        }}
       >
         {/* {!isSignedIn ? (
           <>
@@ -133,15 +155,10 @@ export default function Navigation() {
               component={AddGoalScreen}
               options={{ headerShown: false, presentation: "modal" }}
             />
-            <Stack.Screen name="TaskList" component={TaskListScreen} />
             <Stack.Screen
               name="tasks"
               component={Tasks}
               options={{ title: "Task List" }}
-            />
-            <Stack.Screen
-              name="TaskCompletion"
-              component={TaskCompletionScreen}
             />
             <Stack.Screen
               name="stories"
@@ -150,8 +167,8 @@ export default function Navigation() {
             />
 
             <Stack.Screen name="test" component={TestScreen} />
-            <Stack.Screen 
-              name="reddit-share-example" 
+            <Stack.Screen
+              name="reddit-share-example"
               component={RedditShareExample}
               options={{ title: "Reddit Share Example" }}
             />

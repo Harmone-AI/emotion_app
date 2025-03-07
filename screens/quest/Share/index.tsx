@@ -8,7 +8,7 @@ import ViewShot from "react-native-view-shot";
 import Share, { Social } from "react-native-share";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-
+import { Quest } from "@/api/api";
 export default React.memo(
   React.forwardRef(
     (
@@ -18,8 +18,8 @@ export default React.memo(
         onClose,
         onImageLoad,
       }: {
-        header: React.ReactNode;
-        quest: any;
+        header: (width: number) => React.ReactNode;
+        quest: Quest;
         onClose: () => void;
         onImageLoad: () => void;
       },
@@ -37,8 +37,9 @@ export default React.memo(
             right: 0,
             bottom: 0,
             backgroundColor: "rgba(0,0,0,0.7)",
-            justifyContent: "flex-end",
+            // justifyContent: "flex-end",
             alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <ViewShot
@@ -75,16 +76,44 @@ export default React.memo(
                   alignSelf: "center",
                   marginTop: scaleSize(5),
                   borderRadius: scaleSize(20),
+                  paddingTop: scaleSize(20),
                 }}
               >
-                {header}
+                {header(300)}
+                <HBase
+                  style={{
+                    color: "#FFF",
+                    textAlign: "center",
+                    fontFamily: "SF Pro Rounded",
+                    fontSize: scaleSize(20),
+                    fontStyle: "normal",
+                    fontWeight: "700",
+                    textTransform: "capitalize",
+                    marginTop: scaleSize(40),
+                    lineHeight: scaleSize(30),
+                  }}
+                >
+                  Completed{" "}
+                  <HBase
+                    style={{
+                      color: "#FFF",
+                      fontFamily: "SF Pro Rounded",
+                      fontSize: scaleSize(28),
+                      fontStyle: "normal",
+                      fontWeight: "700",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {quest.taskids?.split(",").length}
+                  </HBase>{" "}
+                  goals
+                </HBase>
               </View>
               <View
                 style={{
                   flex: 1,
                   flexDirection: "row",
                   alignItems: "center",
-                  // backgroundColor: "red",
                   paddingHorizontal: scaleSize(15),
                 }}
               >
@@ -96,16 +125,32 @@ export default React.memo(
                     backgroundColor: "#FF7A2D",
                     justifyContent: "center",
                     alignItems: "center",
+                    borderRadius: scaleSize(12),
                   }}
                 >
                   <Image
                     source={{ uri: quest.begin_img }}
-                    style={{ width: scaleSize(34), height: scaleSize(34) }}
+                    style={{
+                      width: scaleSize(34),
+                      height: scaleSize(34),
+                    }}
                     contentFit="contain"
                     onLoad={onImageLoad}
                   />
                 </View>
-                <HBase style={{ flex: 1 }}>{quest.quest_title}</HBase>
+                <HBase
+                  style={{
+                    flex: 1,
+                    color: "#000",
+                    fontSize: scaleSize(16),
+                    fontStyle: "normal",
+                    fontWeight: "600",
+                    lineHeight: scaleSize(16),
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {quest.user_title}
+                </HBase>
                 <Image
                   source={require("@/assets/images/qr.png")}
                   style={{ width: scaleSize(50), height: scaleSize(50) }}
@@ -115,27 +160,62 @@ export default React.memo(
               </View>
             </View>
           </ViewShot>
-          <AppButton
+          <View
             style={{
-              width: scaleSize(60),
-              height: scaleSize(60),
-              backgroundColor: "#fff",
-              borderRadius: scaleSize(60),
-              justifyContent: "center",
+              flexDirection: "row",
               alignItems: "center",
+              marginBottom: scaleSize(40 + insets.bottom),
               marginTop: scaleSize(16),
-            }}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              onClose();
+              justifyContent: "space-around",
+              width: scaleSize(370),
             }}
           >
-            <Image
-              source={require("@/assets/images/close.svg")}
-              style={{ width: scaleSize(24), height: scaleSize(24) }}
-            />
-          </AppButton>
-          <View
+            <AppButton
+              style={{
+                width: scaleSize(60),
+                height: scaleSize(60),
+                backgroundColor: "#fff",
+                borderRadius: scaleSize(60),
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onClose();
+              }}
+            >
+              <Image
+                source={require("@/assets/images/close.svg")}
+                style={{ width: scaleSize(24), height: scaleSize(24) }}
+              />
+            </AppButton>
+            <AppButton
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: scaleSize(40),
+                width: scaleSize(60),
+                height: scaleSize(60),
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                PlatformShare.share({
+                  url: sharedImageUri.current,
+                  message: "",
+                });
+              }}
+            >
+              <Image
+                source={require("@/assets/images/share.svg")}
+                style={{
+                  width: scaleSize(24),
+                  height: scaleSize(24),
+                }}
+              />
+            </AppButton>
+          </View>
+          {/* <View
             style={{
               marginTop: !insets.bottom ? scaleSize(16) : scaleSize(46),
               flexDirection: "row",
@@ -208,14 +288,14 @@ export default React.memo(
                   width: scaleSize(60),
                   height: scaleSize(60),
                   borderRadius: scaleSize(30),
-                  overflow: 'hidden',
+                  overflow: "hidden",
                   borderWidth: 1,
-                  borderColor: '#e0e0e0'
+                  borderColor: "#e0e0e0",
                 }}
               >
                 <Image
                   source={require("@/assets/images/reddit.svg")}
-                  style={{ width: '100%', height: '100%' }}
+                  style={{ width: "100%", height: "100%" }}
                 />
               </View>
             </AppButton>
@@ -226,7 +306,8 @@ export default React.memo(
                 import("@/utils/tiktokShare").then(({ directOpenTikTok }) => {
                   directOpenTikTok(
                     sharedImageUri.current,
-                    quest.quest_title || "Check out my Harmone AI emotion! #HarmoneAI #EmotionAI"
+                    quest.quest_title ||
+                      "Check out my Harmone AI emotion! #HarmoneAI #EmotionAI"
                   );
                 });
               }}
@@ -236,14 +317,14 @@ export default React.memo(
                   width: scaleSize(60),
                   height: scaleSize(60),
                   borderRadius: scaleSize(30),
-                  overflow: 'hidden',
+                  overflow: "hidden",
                   borderWidth: 1,
-                  borderColor: '#e0e0e0'
+                  borderColor: "#e0e0e0",
                 }}
               >
                 <Image
                   source={require("./tiktok.jpg")}
-                  style={{ width: '100%', height: '100%' }}
+                  style={{ width: "100%", height: "100%" }}
                 />
               </View>
             </AppButton>
@@ -251,12 +332,15 @@ export default React.memo(
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 // Directly open Instagram app
-                import("@/utils/instagramShare").then(({ directOpenInstagram }) => {
-                  directOpenInstagram(
-                    sharedImageUri.current,
-                    quest.quest_title || "Check out my Harmone AI emotion! #HarmoneAI #EmotionAI"
-                  );
-                });
+                import("@/utils/instagramShare").then(
+                  ({ directOpenInstagram }) => {
+                    directOpenInstagram(
+                      sharedImageUri.current,
+                      quest.quest_title ||
+                        "Check out my Harmone AI emotion! #HarmoneAI #EmotionAI"
+                    );
+                  }
+                );
               }}
             >
               <View
@@ -264,14 +348,14 @@ export default React.memo(
                   width: scaleSize(60),
                   height: scaleSize(60),
                   borderRadius: scaleSize(30),
-                  overflow: 'hidden',
+                  overflow: "hidden",
                   borderWidth: 1,
-                  borderColor: '#e0e0e0'
+                  borderColor: "#e0e0e0",
                 }}
               >
                 <Image
                   source={require("@/assets/images/instagram.svg")}
-                  style={{ width: '100%', height: '100%' }}
+                  style={{ width: "100%", height: "100%" }}
                 />
               </View>
             </AppButton>
@@ -289,18 +373,18 @@ export default React.memo(
                   width: scaleSize(60),
                   height: scaleSize(60),
                   borderRadius: scaleSize(30),
-                  overflow: 'hidden',
+                  overflow: "hidden",
                   borderWidth: 1,
-                  borderColor: '#e0e0e0'
+                  borderColor: "#e0e0e0",
                 }}
               >
                 <Image
                   source={require("../more.svg")}
-                  style={{ width: '100%', height: '100%' }}
+                  style={{ width: "100%", height: "100%" }}
                 />
               </View>
             </AppButton>
-          </View>
+          </View> */}
         </View>
       );
     }

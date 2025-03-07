@@ -1,7 +1,6 @@
 import PopView from "@/components/PopView";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { Portal } from "@gorhom/portal";
 import { StackActions, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useCallback, useRef, useState } from "react";
@@ -20,7 +19,6 @@ import {
   Platform,
 } from "react-native";
 import * as api from "@/api/api";
-import CreateView from "../../quest/createView";
 import { useScaleSize } from "@/hooks/useScreen";
 import AppButton from "@/components/AppButton";
 import Page from "@/components/Page";
@@ -113,18 +111,6 @@ export default function KeyboardInputTargetScreen() {
             autoFocus={true}
           ></TextInput>
         </View>
-
-        {showCreateView && (
-          <PopView>
-            <CreateView
-              userInput={userInput}
-              taskids={taskids}
-              onClose={() => {
-                setShowCreateView(false);
-              }}
-            ></CreateView>
-          </PopView>
-        )}
       </Page>
       <AppButton
         disabled={showLoading}
