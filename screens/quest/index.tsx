@@ -509,6 +509,7 @@ export default function QuestScreen({ route }: any) {
                         width: scaleSize(7),
                         height: scaleSize(4),
                         marginLeft: scaleSize(6),
+                        marginBottom: scaleSize(2),
                         transform: [
                           { rotate: folderFinishedTasks ? "0deg" : "180deg" },
                         ],
@@ -518,25 +519,28 @@ export default function QuestScreen({ route }: any) {
                 </ReAnimated.View>
               )}
 
-            {!folderFinishedTasks &&
-              finishTaskIds?.map((id, index) => {
-                const task = tasks?.[Number(id)];
-                return (
-                  <TaskItem
-                    key={id}
-                    id={Number(id)}
-                    task={task!}
-                    questId={quest.id}
-                    isFinalTask={false}
-                    onFinishTask={(allFinish) => {
-                      if (allFinish) {
-                        setFolderFinishedTasks(true);
-                      }
-                    }}
-                    confirmed={quest.confirmed}
-                  />
-                );
-              })}
+            {!folderFinishedTasks && (
+              <GestureHandlerRootView style={{}}>
+                {finishTaskIds?.map((id, index) => {
+                  const task = tasks?.[Number(id)];
+                  return (
+                    <TaskItem
+                      key={id}
+                      id={Number(id)}
+                      task={task!}
+                      questId={quest.id}
+                      isFinalTask={false}
+                      onFinishTask={(allFinish) => {
+                        if (allFinish) {
+                          setFolderFinishedTasks(true);
+                        }
+                      }}
+                      confirmed={quest.confirmed}
+                    />
+                  );
+                })}
+              </GestureHandlerRootView>
+            )}
             <View style={{ height: scaleSize(60), width: "100%" }} />
           </ReAnimated.ScrollView>
           {/* {!folderFinishedTasks && (

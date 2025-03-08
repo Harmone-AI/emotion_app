@@ -13,6 +13,7 @@ import {
   Alert,
   StatusBar,
   useAnimatedValue,
+  AppState,
 } from "react-native";
 const animalImage = require("@/assets/animal.png");
 const { width, height } = Dimensions.get("window");
@@ -172,6 +173,18 @@ export default function HomeScreen({ navigation }: any) {
       };
     }, [])
   );
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        player.play();
+      } else {
+        player.pause();
+      }
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   // const { isPlaying } = useEvent(player, "playingChange", {
   //   isPlaying: player.playing,
