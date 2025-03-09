@@ -373,9 +373,8 @@ export default function StoryDetailScreen() {
                 }}
                 style={{
                   justifyContent: "center",
-                  padding: scaleSize(24),
-                  minHeight: scaleSize(40),
-                  minWidth: scaleSize(40),
+                  paddingVertical: scaleSize(16),
+                  paddingHorizontal: scaleSize(16),
                 }}
               >
                 <Image
@@ -393,11 +392,8 @@ export default function StoryDetailScreen() {
                   setSharedContentPreview(true);
                 }}
                 style={{
-                  minHeight: scaleSize(40),
-                  minWidth: scaleSize(40),
-                  justifyContent: "center",
-                  alignItems: "flex-end",
-                  padding: scaleSize(24),
+                  paddingVertical: scaleSize(16),
+                  paddingHorizontal: scaleSize(16),
                 }}
               >
                 <Image
