@@ -204,6 +204,7 @@ export default function HomeScreen({ navigation }: any) {
       });
     return newQuestsArray;
   }, [questMap]);
+  const headLeftImageWidth = 55;
   return (
     <View
       style={{
@@ -285,11 +286,12 @@ export default function HomeScreen({ navigation }: any) {
                             borderStyle: "solid",
                             borderColor: "rgba(0, 0, 0, 0.1)",
                             borderWidth: scaleSize(1),
-                            width: scaleSize(56),
-                            height: scaleSize(56),
+                            width: scaleSize(headLeftImageWidth),
+                            height: scaleSize(headLeftImageWidth),
                             transform: [
                               {
-                                scale: index === 3 ? 45 / 56 : 1,
+                                scale:
+                                  index === 3 ? 45 / headLeftImageWidth : 1,
                               },
                             ],
                             justifyContent: "center",
@@ -298,8 +300,8 @@ export default function HomeScreen({ navigation }: any) {
                             left: [
                               0,
                               scaleSize(39),
-                              scaleSize(23 + 56),
-                              scaleSize(23 + 56 + 16),
+                              scaleSize(23 + headLeftImageWidth),
+                              scaleSize(23 + headLeftImageWidth + 16),
                             ][index],
                           }}
                         >
@@ -308,8 +310,8 @@ export default function HomeScreen({ navigation }: any) {
                             source={{ uri: quest.end_img }}
                             contentFit="contain"
                             style={{
-                              width: scaleSize(46),
-                              height: scaleSize(46),
+                              width: scaleSize(45),
+                              height: scaleSize(45),
                             }}
                           />
                         </LinearGradient>
