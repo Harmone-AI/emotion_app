@@ -149,6 +149,8 @@ export default function HomeScreen({ navigation }: any) {
   }, [latestStoryAvailableAt, lastStoryFetchTime]);
   useFocusEffect(checkLatestStoryAvailable);
   const isOnATrip = new Date(latestStoryAvailableAt) > new Date();
+  const hours = new Date().getHours();
+  const isDayTime = hours > 6 && hours < 20;
   const player = useVideoPlayer(require("./character.mov"), (player) => {
     player.loop = true;
     player.muted = true;
@@ -159,12 +161,14 @@ export default function HomeScreen({ navigation }: any) {
     if (isOnATrip) {
       player.replace(require("./fire.mov"));
     } else {
-      player.replace(require("./character.mov"));
+      player.replace(
+        isDayTime ? require("./character.mov") : require("./sleep.mp4")
+      );
     }
     player.loop = true;
     player.muted = true;
     player.play();
-  }, [isOnATrip]);
+  }, [isOnATrip, isDayTime]);
   useFocusEffect(
     React.useCallback(() => {
       player.play();
@@ -506,10 +510,10 @@ export default function HomeScreen({ navigation }: any) {
           ) : (
             <VideoView
               style={{
-                width: scaleSize(700),
-                height: scaleSize(700),
+                width: scaleSize(isDayTime ? 700 : 500),
+                height: scaleSize(isDayTime ? 700 : 500),
                 alignSelf: "center",
-                marginLeft: scaleSize(30),
+                marginLeft: scaleSize(isDayTime ? 30 : -200), //:
                 marginBottom: scaleSize(0),
                 // backgroundColor: "transparent",
               }}

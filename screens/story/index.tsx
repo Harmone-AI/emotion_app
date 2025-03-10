@@ -32,7 +32,7 @@ export default function StoryDetailScreen() {
   const story = useStoryStore((state) =>
     state.stories.find((story) => story.id === route.params?.id)
   );
-  const disableSelect = useRef(story?.choice >= 0);
+  const disableSelect = story?.choice >= 0;
   const scaleSize = useScaleSize();
   const insets = useSafeAreaInsets();
 
@@ -168,7 +168,7 @@ export default function StoryDetailScreen() {
           if (line.includes("# Choice")) {
             return (
               <AppButton
-                disabled={disableSelect.current || loading}
+                disabled={disableSelect || loading}
                 key={index}
                 style={[
                   {

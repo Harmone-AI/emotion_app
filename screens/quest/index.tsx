@@ -48,7 +48,7 @@ import { Shadow } from "react-native-shadow-2";
 import LottieView from "lottie-react-native";
 import Share from "./Share";
 import * as Haptics from "expo-haptics";
-
+import FinishLottie from "./FinishLottie";
 export default function QuestScreen({ route }: any) {
   const scaleSize = useScaleSize();
   const navigation = useNavigation();
@@ -82,6 +82,9 @@ export default function QuestScreen({ route }: any) {
   const percent = React.useMemo(() => {
     return finishedCount / (quest?.taskids.split(",").length || 0);
   }, [finishedCount, quest]);
+  const hasEmptyTask = React.useMemo(() => {
+    return taskIds?.some((id) => tasks?.[Number(id)]?.content === "");
+  }, [taskIds, tasks]);
   const insets = useSafeAreaInsets();
   // Add shake animation
   const shakeAnimation = useAnimatedValue(0);
@@ -254,7 +257,9 @@ export default function QuestScreen({ route }: any) {
           alignSelf: "center",
           marginTop: scaleSize(30),
         }}
-        source={{ uri: quest.begin_img }}
+        source={{
+          uri: unFinishTaskIds.length === 0 ? quest.end_img : quest.begin_img,
+        }}
         resizeMode="contain"
         onLoad={onImageLoad}
       />
@@ -274,13 +279,16 @@ export default function QuestScreen({ route }: any) {
       <HBase
         style={{
           fontSize: scaleSize(14),
-          lineHeight: scaleSize(20),
+          lineHeight: scaleSize(18),
           fontWeight: "500",
           color: "#fff",
           textAlign: "center",
+          paddingHorizontal: scaleSize(16),
         }}
       >
-        {quest?.user_title}
+        {unFinishTaskIds.length === 0
+          ? quest?.end_message
+          : quest?.start_message}
       </HBase>
 
       <ReAnimated.View
@@ -630,44 +638,61 @@ export default function QuestScreen({ route }: any) {
             layout={LinearTransition}
           >
             {quest.confirmed ? (
-              <AppButton
-                disabled={loading}
-                onPress={async () => {
-                  try {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setLoading(true);
-                    await addTask(quest.id, "");
-                  } catch (e) {
-                    console.error("Error addTask:", e);
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                style={{
-                  shadowColor: "#cf620c",
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
-                  },
-                  shadowRadius: 0,
-                  elevation: 0,
-                  shadowOpacity: 1,
-                  borderRadius: 8,
-                  backgroundColor: "#ff7c14",
-                  width: scaleSize(338),
-                  height: scaleSize(40),
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "row",
-                }}
-              >
-                {loading ? (
-                  <AppLoading
-                    color="#fff"
-                    width={scaleSize(24)}
-                    height={scaleSize(24)}
-                  />
-                ) : (
+              !hasEmptyTask && (
+                <AppButton
+                  disabled={loading}
+                  onPress={async () => {
+                    try {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setLoading(true);
+                      await addTask(quest.id, "");
+                    } catch (e) {
+                      console.error("Error addTask:", e);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  style={{
+                    shadowColor: "#cf620c",
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+                    shadowRadius: 0,
+                    elevation: 0,
+                    shadowOpacity: 1,
+                    borderRadius: 8,
+                    backgroundColor: "#ff7c14",
+                    width: scaleSize(338),
+                    height: scaleSize(40),
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flexDirection: "row",
+                  }}
+                >
+                  {loading ? (
+                    <AppLoading
+                      color="#fff"
+                      width={scaleSize(24)}
+                      height={scaleSize(24)}
+                    />
+                  ) : (
+                    <HBase
+                      style={{
+                        fontSize: scaleSize(15),
+                        lineHeight: scaleSize(15),
+                        textTransform: "uppercase",
+                        fontWeight: "700",
+                        color: "#fff",
+                        textAlign: "right",
+                        textAlignVertical: "center",
+                        alignSelf: "center",
+                        width: scaleSize(24),
+                      }}
+                    >
+                      +
+                    </HBase>
+                  )}
                   <HBase
                     style={{
                       fontSize: scaleSize(15),
@@ -675,33 +700,18 @@ export default function QuestScreen({ route }: any) {
                       textTransform: "uppercase",
                       fontWeight: "700",
                       color: "#fff",
-                      textAlign: "right",
+                      textAlign: "left",
                       textAlignVertical: "center",
                       alignSelf: "center",
-                      width: scaleSize(24),
+                      marginTop: scaleSize(2),
+                      marginRight: scaleSize(10),
                     }}
                   >
-                    +
+                    {" "}
+                    Add goal
                   </HBase>
-                )}
-                <HBase
-                  style={{
-                    fontSize: scaleSize(15),
-                    lineHeight: scaleSize(15),
-                    textTransform: "uppercase",
-                    fontWeight: "700",
-                    color: "#fff",
-                    textAlign: "left",
-                    textAlignVertical: "center",
-                    alignSelf: "center",
-                    marginTop: scaleSize(2),
-                    marginRight: scaleSize(10),
-                  }}
-                >
-                  {" "}
-                  Add goal
-                </HBase>
-              </AppButton>
+                </AppButton>
+              )
             ) : (
               <>
                 <AppButton
@@ -852,15 +862,7 @@ export default function QuestScreen({ route }: any) {
           }}
           pointerEvents="none"
         >
-          <LottieView
-            source={require("./fireworks.json")}
-            autoPlay={true}
-            loop={false}
-            style={{
-              width: "100%",
-              height: "100%",
-            }}
-          />
+          <FinishLottie />
         </View>
       )}
       {readyToShare && (
