@@ -18,6 +18,7 @@ import StoryDetailScreen from "../screens/story";
 import StoryListScreen from "../screens/stories";
 import AddGoalScreen from "../screens/tabs/AddGoalScreen";
 import HomeScreen from "../screens/tabs/home";
+import SettingsScreen from "../screens/tabs/SettingsScreen";
 import { DrawerParamList, RootStackParamList } from "./types";
 import { PostHogProvider } from "posthog-react-native";
 import Tasks from "@/screens/tasks";
@@ -30,6 +31,8 @@ import KeyboardInputTargetScreen from "@/screens/tabs/home/KeyboardInputTarget";
 import TestScreen from "@/screens/test/TestScreen";
 import QuestScreen from "@/screens/quest";
 import RedditShareExample from "@/screens/test/RedditShareExample";
+import { SessionReplyPermissionDialog } from "@/screens/dialog/SessionReplyPermissionDialog";
+import { useSetting, useSettingStore } from "@/hooks/zustand/setting";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -57,26 +60,28 @@ export default function Navigation() {
     initBySession();
   }, []);
   const scheme = useColorScheme();
+  const [data, setData] = useSetting("p_session_replay");
   if (initialRouteName === undefined) {
     return null;
   }
   return (
     <NavigationContainer theme={scheme === "dark" ? DarkTheme : DefaultTheme}>
-      {/* <PostHogProvider
+      <PostHogProvider
         apiKey="phc_oRAcPnb1Mt5vy38HacooO5Mq6qmtBxfa6D0DjYnevFM"
+        autocapture={true}
         options={{
           host: "https://us.i.posthog.com",
 
           // check https://posthog.com/docs/session-replay/installation?tab=React+Native
           // for more config and to learn about how we capture sessions on mobile
           // and what to expect
-          enableSessionReplay: true,
+          enableSessionReplay: !!data,
           sessionReplayConfig: {
             // Whether text inputs are masked. Default is true.
             // Password inputs are always masked regardless
-            maskAllTextInputs: true,
+            maskAllTextInputs: false,
             // Whether images are masked. Default is true.
-            maskAllImages: true,
+            maskAllImages: false,
             // Capture logs automatically. Default is true.
             // Android only (Native Logcat only)
             captureLog: true,
@@ -86,97 +91,113 @@ export default function Navigation() {
             // iOS only
             captureNetworkTelemetry: true,
             // Deboucer delay used to reduce the number of snapshots captured and reduce performance impact. Default is 500ms
-            androidDebouncerDelayMs: 500,
+            androidDebouncerDelayMs: 1000,
             // Deboucer delay used to reduce the number of snapshots captured and reduce performance impact. Default is 1000ms
             iOSdebouncerDelayMs: 1000,
           },
         }}
         style={{ flex: 1 }}
-      > */}
-      <Stack.Navigator
-        initialRouteName={__DEV__ ? initialRouteName : initialRouteName}
-        screenOptions={{
-          headerBackImageSource: require("@/assets/images/back.png"),
-          headerBackTitle: "",
-          headerShadowVisible: true,
-          headerBackButtonDisplayMode: "minimal",
-          headerTintColor: "#D0D0D0",
-          headerTitleStyle: {
-            color: "#4F4F4F",
-          },
-          // headerSearchBarOptions: {
-          //   tintColor: "#E0E0E0",
-          // },
-          // headerTintColor: "#E0E0E0",
-          headerTransparent: true,
-          headerBlurEffect: "regular",
-          headerStyle: {
-            backgroundColor: "transparent",
-          },
-        }}
       >
-        {/* {!isSignedIn ? (
+        <Stack.Navigator
+          initialRouteName={__DEV__ ? initialRouteName : initialRouteName}
+          screenOptions={{
+            headerBackImageSource: require("@/assets/images/back.png"),
+            headerBackTitle: "",
+            headerShadowVisible: true,
+            headerBackButtonDisplayMode: "minimal",
+            headerTintColor: "#D0D0D0",
+            headerTitleStyle: {
+              color: "#4F4F4F",
+            },
+            // headerSearchBarOptions: {
+            //   tintColor: "#E0E0E0",
+            // },
+            // headerTintColor: "#E0E0E0",
+            headerTransparent: true,
+            headerBlurEffect: "regular",
+            headerStyle: {
+              backgroundColor: "transparent",
+            },
+          }}
+        >
+          {/* {!isSignedIn ? (
           <>
             <Stack.Screen name='SignIn' component={SignInScreen} />
             <Stack.Screen name='SignUp' component={SignUpScreen} />
           </>
         ) : ( */}
-        <>
-          <Stack.Group screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="SignIn" component={SignInScreen} />
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen
-              name="quest"
-              component={QuestScreen}
-              options={{
-                animation: "slide_from_bottom",
-              }}
-            />
-            <Stack.Screen
-              name="keyboard-input-target"
-              component={KeyboardInputTargetScreen}
-              options={{
-                presentation: "containedTransparentModal",
-              }}
-            />
-            <Stack.Screen
-              name="story"
-              component={StoryDetailScreen}
-              options={{
-                presentation: "formSheet",
-                title: "",
-                headerShadowVisible: false,
-              }}
-            />
-          </Stack.Group>
-          <Stack.Group screenOptions={{ headerShown: true }}>
-            <Stack.Screen
-              name="AddGoal"
-              component={AddGoalScreen}
-              options={{ headerShown: false, presentation: "modal" }}
-            />
-            <Stack.Screen
-              name="tasks"
-              component={Tasks}
-              options={{ title: "Task List" }}
-            />
-            <Stack.Screen
-              name="stories"
-              component={StoryListScreen}
-              options={{ title: "Story List" }}
-            />
+          <>
+            <Stack.Group screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="SignIn" component={SignInScreen} />
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen
+                name="quest"
+                component={QuestScreen}
+                options={{
+                  animation: "slide_from_bottom",
+                }}
+              />
+              <Stack.Screen
+                name="keyboard-input-target"
+                component={KeyboardInputTargetScreen}
+                options={{
+                  presentation: "containedTransparentModal",
+                }}
+              />
+              <Stack.Screen
+                name="story"
+                component={StoryDetailScreen}
+                options={{
+                  presentation: "formSheet",
+                  title: "",
+                  headerShadowVisible: false,
+                }}
+              />
+              <Stack.Screen
+                name="session-reply-permission"
+                component={SessionReplyPermissionDialog}
+                options={{
+                  presentation: "transparentModal",
+                  animation: "fade",
+                }}
+              />
+            </Stack.Group>
+            <Stack.Group screenOptions={{ headerShown: true }}>
+              <Stack.Screen
+                name="AddGoal"
+                component={AddGoalScreen}
+                options={{ headerShown: false, presentation: "modal" }}
+              />
+              <Stack.Screen
+                name="tasks"
+                component={Tasks}
+                options={{ title: "Task List" }}
+              />
+              <Stack.Screen
+                name="stories"
+                component={StoryListScreen}
+                options={{ title: "Story List" }}
+              />
 
-            <Stack.Screen name="test" component={TestScreen} />
-            <Stack.Screen
-              name="reddit-share-example"
-              component={RedditShareExample}
-              options={{ title: "Reddit Share Example" }}
-            />
-          </Stack.Group>
-        </>
-        {/* )} */}
-      </Stack.Navigator>
-      {/* </PostHogProvider> */}
+              <Stack.Screen name="test" component={TestScreen} />
+              <Stack.Screen
+                name="reddit-share-example"
+                component={RedditShareExample}
+                options={{ title: "Reddit Share Example" }}
+              />
+              <Stack.Screen
+                name="Settings"
+                component={SettingsScreen}
+                options={{
+                  headerShown: true,
+                  title: "Settings",
+                }}
+              />
+            </Stack.Group>
+          </>
+          {/* )} */}
+        </Stack.Navigator>
+      </PostHogProvider>
     </NavigationContainer>
   );
 }

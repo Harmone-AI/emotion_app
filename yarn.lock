@@ -923,10 +923,29 @@
     "@babel/helper-string-parser" "^7.25.9"
     "@babel/helper-validator-identifier" "^7.25.9"
 
+"@bacons/xcode@^1.0.0-alpha.12":
+  version "1.0.0-alpha.24"
+  resolved "https://registry.yarnpkg.com/@bacons/xcode/-/xcode-1.0.0-alpha.24.tgz#fb91a6cab6153dfd70d0e0cff1c79471cca10cb0"
+  integrity sha512-RaYUNsGBJVp0t2vgXaT4L668WIvbhtdl1JFJHedPkebIPR6h/+E2Kq32O49t+8f4LUPW9UF4CfXBrDc+XdXUUQ==
+  dependencies:
+    "@expo/plist" "^0.0.18"
+    debug "^4.3.4"
+    uuid "^8.3.2"
+
 "@bcoe/v8-coverage@^0.2.3":
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
+
+"@config-plugins/apple-settings@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@config-plugins/apple-settings/-/apple-settings-3.0.0.tgz#d21518714b841e7562ca33faa9bf115f61eb384e"
+  integrity sha512-mmO9QhFVFQ9m0W4vhS1VoXUHz8K2BLAWK4Fuvgt/7m7JKiyWE5A/BgZTvlbMwvKBSfLGSLgDPToyVFCq8u/tAw==
+  dependencies:
+    "@bacons/xcode" "^1.0.0-alpha.12"
+    "@expo/plist" "^0.2.0"
+    iconv-lite "^0.6.3"
+    schema-utils "^4.2.0"
 
 "@egjs/hammerjs@^2.0.17":
   version "2.0.17"
@@ -1347,19 +1366,28 @@
     split "^1.0.1"
     sudo-prompt "9.1.1"
 
-"@expo/plist@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.npmjs.org/@expo/plist/-/plist-0.2.1.tgz"
-  integrity sha512-9TaXGuNxa0LQwHQn4rYiU6YaERv6dPnQgsdKWq2rKKTr6LWOtGNQCi/yOk/HBLeZSxBm59APT5/6x60uRvr0Mg==
+"@expo/plist@^0.0.18":
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/@expo/plist/-/plist-0.0.18.tgz#9abcde78df703a88f6d9fa1a557ee2f045d178b0"
+  integrity sha512-+48gRqUiz65R21CZ/IXa7RNBXgAI/uPSdvJqoN9x1hfL44DNbUoWHgHiEXTx7XelcATpDwNTz6sHLfy0iNqf+w==
+  dependencies:
+    "@xmldom/xmldom" "~0.7.0"
+    base64-js "^1.2.3"
+    xmlbuilder "^14.0.0"
+
+"@expo/plist@^0.2.0", "@expo/plist@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@expo/plist/-/plist-0.2.2.tgz#2563b71b4aa78dc9dbc34cc3d2e1011e994bc9cd"
+  integrity sha512-ZZGvTO6vEWq02UAPs3LIdja+HRO18+LRI5QuDl6Hs3Ps7KX7xU6Y6kjahWKY37Rx2YjNpX07dGpBFzzC+vKa2g==
   dependencies:
     "@xmldom/xmldom" "~0.7.7"
     base64-js "^1.2.3"
     xmlbuilder "^14.0.0"
 
-"@expo/plist@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@expo/plist/-/plist-0.2.2.tgz#2563b71b4aa78dc9dbc34cc3d2e1011e994bc9cd"
-  integrity sha512-ZZGvTO6vEWq02UAPs3LIdja+HRO18+LRI5QuDl6Hs3Ps7KX7xU6Y6kjahWKY37Rx2YjNpX07dGpBFzzC+vKa2g==
+"@expo/plist@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.npmjs.org/@expo/plist/-/plist-0.2.1.tgz"
+  integrity sha512-9TaXGuNxa0LQwHQn4rYiU6YaERv6dPnQgsdKWq2rKKTr6LWOtGNQCi/yOk/HBLeZSxBm59APT5/6x60uRvr0Mg==
   dependencies:
     "@xmldom/xmldom" "~0.7.7"
     base64-js "^1.2.3"
@@ -2695,7 +2723,7 @@
   resolved "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.8.10.tgz"
   integrity sha512-2WALfTl4xo2SkGCYRt6rDTFfk9R1czmBvUQy12gK2KuRKIpWEhcbbzy8EZXtz/jkRqHX8bFEc6FC1HjX4TUWYw==
 
-"@xmldom/xmldom@~0.7.7":
+"@xmldom/xmldom@~0.7.0", "@xmldom/xmldom@~0.7.7":
   version "0.7.13"
   resolved "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.7.13.tgz"
   integrity sha512-lm2GW5PkosIzccsaZIz7tp8cPADSIlIHWDFTR1N0SzfinhhYgeIQjFMz4rYzanCScr3DqQLeomUDArp6MWKm+g==
@@ -5663,7 +5691,7 @@ hyphenate-style-name@^1.0.3:
   resolved "https://registry.yarnpkg.com/hyphenate-style-name/-/hyphenate-style-name-1.1.0.tgz#1797bf50369588b47b72ca6d5e65374607cf4436"
   integrity sha512-WDC/ui2VVRrz3jOVi+XtjqkDjiVjTtFaAGiW37k6b+ohyQ5wYDOGkvCZa8+H0nx3gyvv0+BST9xuOgIyGQ00gw==
 
-iconv-lite@0.6.3:
+iconv-lite@0.6.3, iconv-lite@^0.6.3:
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.3.tgz#a52f80bf38da1952eb5c681790719871a1a72501"
   integrity sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==
@@ -8717,7 +8745,7 @@ scheduler@^0.23.2:
   dependencies:
     loose-envify "^1.1.0"
 
-schema-utils@^4.0.1:
+schema-utils@^4.0.1, schema-utils@^4.2.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/schema-utils/-/schema-utils-4.3.0.tgz#3b669f04f71ff2dfb5aba7ce2d5a9d79b35622c0"
   integrity sha512-Gf9qqc58SpCA/xdziiHz35F4GNIWYWZrEshUc/G/r5BnLph6xpKuLeoJoQuj5WfBIx/eQLf+hmVPYHaxJu7V2g==

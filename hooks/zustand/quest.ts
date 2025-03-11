@@ -120,9 +120,8 @@ export const useQuestStore = create<QuestState>()(
         });
         const timer = setTimeout(() => {
           api.delete_task(taskId);
-        }, 3000);
+        }, 5000);
         return () => {
-          console.log("undo");
           set((state) => {
             state.questMap[questId].taskids = oldTaskIds;
             state.taskMap[taskId] = oldTask;

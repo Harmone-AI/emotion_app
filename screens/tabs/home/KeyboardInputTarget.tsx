@@ -74,8 +74,8 @@ export default function KeyboardInputTargetScreen() {
           >
             <Image
               style={{
-                width: scaleSize(32),
-                height: scaleSize(32),
+                width: scaleSize(40),
+                height: scaleSize(40),
                 marginRight: scaleSize(24),
               }}
               source={require("@/assets/home/close.png")}

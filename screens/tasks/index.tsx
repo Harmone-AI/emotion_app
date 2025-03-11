@@ -21,55 +21,40 @@ import {
   View,
   Animated,
   StyleSheet,
+  Button,
 } from "react-native";
 import * as Haptics from "expo-haptics";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { RootStackParamList } from "@/navigation/types";
 const animalImage = require("@/assets/animal.png");
 
-export default function Tasks({ navigation, onClose }: any) {
-  const [rotation, setRotation] = useState(new Animated.Value(0));
-
-  const [list, setList] = useState([
-    {
-      date: "Today",
-      list: [
-        {
-          image: require("@/assets/home/hhh.png"),
-          name: "Daily Earnings Plan",
-          finished: true,
-        },
-        {
-          image: require("@/assets/home/hhh.png"),
-          name: "Daily Earnings Plan",
-          finished: true,
-        },
-        {
-          image: require("@/assets/home/hhh.png"),
-          name: "Daily Earnings Plan",
-          finished: false,
-        },
-      ],
-    },
-    {
-      date: "1/20",
-      list: [
-        {
-          image: require("@/assets/home/hhh.png"),
-          name: "Daily Earnings Plan",
-          finished: true,
-        },
-        {
-          image: require("@/assets/home/hhh.png"),
-          name: "Daily Earnings Plan",
-          finished: true,
-        },
-        {
-          image: require("@/assets/home/hhh.png"),
-          name: "Daily Earnings Plan",
-          finished: false,
-        },
-      ],
-    },
-  ]);
+export default function Tasks({
+  navigation,
+  onClose,
+}: {
+  navigation: NativeStackNavigationProp<RootStackParamList, "tasks">;
+  onClose: () => void;
+}) {
+  React.useEffect(() => {
+    // Use `setOptions` to update the button that we previously specified
+    // Now the button includes an `onPress` handler to update the count
+    navigation.setOptions({
+      headerStyle: {},
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Settings")}
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 10,
+            paddingRight: 0,
+          }}
+        >
+          <Ionicons name="settings-outline" size={24} color="#4F4F4F" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   const close = () => {
     onClose();

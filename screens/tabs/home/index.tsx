@@ -42,6 +42,7 @@ import { useStoryStore } from "@/hooks/zustand/story";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { Quest } from "@/api/api";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSettingStore } from "@/hooks/zustand/setting";
 
 const AnimatedIonicons = Animated.createAnimatedComponent(Ionicons);
 
@@ -187,6 +188,7 @@ export default function HomeScreen({ navigation }: any) {
     });
     return () => {
       subscription.remove();
+      player?.release();
     };
   }, []);
 
@@ -209,6 +211,18 @@ export default function HomeScreen({ navigation }: any) {
     return newQuestsArray;
   }, [questMap]);
   const headLeftImageWidth = 55;
+
+  const sessionReplyPermissionStatus = useSettingStore(
+    (state) => state.sessionReplyPermissionStatus
+  );
+  // Add this near the other useEffect hooks
+  useEffect(() => {
+    // Log the permission status when it changes
+    if (sessionReplyPermissionStatus === "pending") {
+      navigation.navigate("session-reply-permission");
+    }
+  }, []);
+
   return (
     <View
       style={{

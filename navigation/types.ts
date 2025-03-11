@@ -6,6 +6,7 @@ export type DrawerParamList = {
   Home: undefined;
   AddGoal: undefined;
   TaskList: undefined;
+  Settings: undefined;
 };
 
 export type RootStackParamList = {
@@ -26,6 +27,8 @@ export type RootStackParamList = {
   "keyboard-input-target": undefined;
   test: undefined;
   "reddit-share-example": undefined;
+  "session-reply-permission": undefined;
+  Settings: undefined;
 };
 
 export type RootStackNavigationProp =
