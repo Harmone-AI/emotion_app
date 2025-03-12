@@ -147,7 +147,7 @@ export default function QuestScreen({ route }: any) {
       return tasks?.[id]?.status === 0;
     });
   }, [taskIds, tasks]);
-  const unFinishTaskCount = React.useRef(unFinishTaskIds?.length || 0);
+  const unFinishTaskCountRef = React.useRef(unFinishTaskIds?.length || 0);
   const [folderFinishedTasks, setFolderFinishedTasksOriginal] =
     useState<boolean>(true);
   const setFolderFinishedTasks = React.useCallback(
@@ -172,7 +172,7 @@ export default function QuestScreen({ route }: any) {
     [unFinishTaskIds?.length]
   );
   const backgroundScale = useAnimatedValue(
-    unFinishTaskCount.current === 0 ? 3 : 1
+    unFinishTaskCountRef.current === 0 ? 3 : 1
   );
   const [readyToShare, setReadyToShare] = React.useState(false);
   const [loading, setLoading] = useState(false);
@@ -240,6 +240,9 @@ export default function QuestScreen({ route }: any) {
   const onImageLoad = useCallback(() => {
     ref.current?.capture?.();
   }, []);
+  const questFinished = React.useMemo(() => {
+    return unFinishTaskIds.length === 0 && finishTaskIds.length > 0;
+  }, [unFinishTaskIds, finishTaskIds]);
   const header = (width: number = 330) => (
     <ReAnimated.View
       style={[
@@ -461,7 +464,7 @@ export default function QuestScreen({ route }: any) {
                       unFinishTaskIds.length === 1 && task.status === 0
                     }
                     onFinishTask={(allFinish) => {
-                      if (!quest.confirmed) {
+                      if (quest.status !== 1) {
                         startShakeAnimation();
                         return;
                       }
@@ -476,7 +479,7 @@ export default function QuestScreen({ route }: any) {
                         // }, 1000);
                       }
                     }}
-                    confirmed={quest.confirmed}
+                    confirmed={quest.status === 1}
                   />
                 );
               })}
@@ -638,7 +641,7 @@ export default function QuestScreen({ route }: any) {
             }}
             layout={LinearTransition}
           >
-            {quest.confirmed ? (
+            {quest.status === 1 ? (
               !hasEmptyTask && (
                 <AppButton
                   disabled={loading}
@@ -784,23 +787,38 @@ export default function QuestScreen({ route }: any) {
                       justifyContent: "center",
                       alignItems: "center",
                     }}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      confirm(quest.id);
+                    onPress={async () => {
+                      try {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setLoading(true);
+                        await confirm(quest.id);
+                      } catch (e) {
+                        console.error(e);
+                      } finally {
+                        setLoading(false);
+                      }
                     }}
                   >
-                    <HBase
-                      style={{
-                        fontSize: scaleSize(15),
-                        textTransform: "uppercase",
-                        fontWeight: "700",
-                        fontFamily: "SF Pro Rounded",
-                        color: "#fff",
-                        textAlign: "left",
-                      }}
-                    >
-                      confirm
-                    </HBase>
+                    {loading ? (
+                      <AppLoading
+                        color="#fff"
+                        width={scaleSize(24)}
+                        height={scaleSize(24)}
+                      />
+                    ) : (
+                      <HBase
+                        style={{
+                          fontSize: scaleSize(15),
+                          textTransform: "uppercase",
+                          fontWeight: "700",
+                          fontFamily: "SF Pro Rounded",
+                          color: "#fff",
+                          textAlign: "left",
+                        }}
+                      >
+                        confirm
+                      </HBase>
+                    )}
                   </AppButton>
                 </Animated.View>
               </>

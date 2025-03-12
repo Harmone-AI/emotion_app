@@ -87,17 +87,11 @@ export const useQuestStore = create<QuestState>()(
         });
       },
       confirm: async (questId: number) => {
-        // await api.confirm_task(taskId);
+        await api.patch_quest(questId, {
+          status: 1,
+        });
         set((state) => {
-          const quest = state.questMap[questId];
-          const newQuest = { ...quest, confirmed: true };
-          return {
-            ...state,
-            questMap: {
-              ...state.questMap,
-              [questId]: newQuest,
-            },
-          };
+          state.questMap[questId].status = 1;
         });
       },
       patchTask: async (taskId: number, params: Partial<api.Task>) => {

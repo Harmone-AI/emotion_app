@@ -83,6 +83,14 @@ export async function quests(): Promise<Quest[]> {
   return res;
 }
 
+export async function patch_quest(
+  id: number,
+  params: Partial<Quest>
+): Promise<Quest> {
+  let res = await http<Quest>("/quests/" + id, params, "PATCH");
+  return res;
+}
+
 export type Character = {
   status: string;
   remaining_seconds: number;
