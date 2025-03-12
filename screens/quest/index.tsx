@@ -72,18 +72,19 @@ export default function QuestScreen({ route }: any) {
   const post = useQuestStore((state) => state.post);
   const latestUserInput = useQuestStore((state) => state.latestUserInput);
   const confirm = useQuestStore((state) => state.confirm);
-  const taskIds = React.useMemo(() => quest?.taskids.split(","), [quest]);
+  const taskIds = React.useMemo(
+    () => quest?.taskids.split(","),
+    [quest?.taskids]
+  );
   const tasks = useQuestStore((state) => state.taskMap);
   const finishedCount = React.useMemo(() => {
-    return (
-      taskIds?.filter((id) => tasks?.[Number(id)]?.status === 1).length || 0
-    );
+    return taskIds?.filter((id) => tasks?.[id]?.status === 1).length || 0;
   }, [taskIds, tasks]);
   const percent = React.useMemo(() => {
     return finishedCount / (quest?.taskids.split(",").length || 0);
   }, [finishedCount, quest]);
   const hasEmptyTask = React.useMemo(() => {
-    return taskIds?.some((id) => tasks?.[Number(id)]?.content === "");
+    return taskIds?.some((id) => tasks?.[id]?.content === "");
   }, [taskIds, tasks]);
   const insets = useSafeAreaInsets();
   // Add shake animation
@@ -138,12 +139,12 @@ export default function QuestScreen({ route }: any) {
 
   const finishTaskIds = React.useMemo(() => {
     return taskIds.filter((id) => {
-      return tasks?.[Number(id)]?.status === 1;
+      return tasks?.[id]?.status === 1;
     });
   }, [taskIds, tasks]);
   const unFinishTaskIds = React.useMemo(() => {
     return taskIds.filter((id) => {
-      return tasks?.[Number(id)]?.status === 0;
+      return tasks?.[id]?.status === 0;
     });
   }, [taskIds, tasks]);
   const unFinishTaskCount = React.useRef(unFinishTaskIds?.length || 0);
@@ -338,7 +339,7 @@ export default function QuestScreen({ route }: any) {
               marginTop: scaleSize(3),
             }}
           >
-            {finishedCount}/{quest?.taskids.split(",").length || ""}
+            {finishedCount}/{taskIds?.length || ""}
           </HBase>
         </View>
         <View

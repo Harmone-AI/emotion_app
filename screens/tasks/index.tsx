@@ -56,13 +56,6 @@ export default function Tasks({
     });
   }, [navigation]);
 
-  const close = () => {
-    onClose();
-  };
-  const done = () => {
-    onClose();
-  };
-
   const scaleSize = useScaleSize();
 
   const questMap = useQuestStore((state) => state.questMap);

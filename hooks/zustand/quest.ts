@@ -57,8 +57,19 @@ export const useQuestStore = create<QuestState>()(
           quest.taskids.split(",").map(async (item) => {
             const id = Number(item);
             const json = await api.task(id);
-            tasks[id] = json;
-            return json;
+            if (json.task_id) {
+              tasks[id] = json;
+            } else if (json.detail === "Task not found") {
+              set((state) => {
+                state.questMap[questId].taskids = state.questMap[
+                  questId
+                ].taskids
+                  .split(",")
+                  .filter((item) => String(item) !== String(id))
+                  .join(",");
+                delete state.taskMap[id];
+              });
+            }
           })
         );
         set((state) => {
@@ -102,8 +113,6 @@ export const useQuestStore = create<QuestState>()(
         });
       },
       deleteTask: async (taskId: number) => {
-        const oldQuestMap = get().questMap;
-        const oldTaskMap = get().taskMap;
         const questId = Object.keys(get().questMap).find((key) => {
           return get()
             .questMap[key].taskids.split(",")
@@ -114,7 +123,7 @@ export const useQuestStore = create<QuestState>()(
         set((state) => {
           state.questMap[questId].taskids = state.questMap[questId].taskids
             .split(",")
-            .filter((item) => item !== taskId.toString())
+            .filter((item) => String(item) !== String(taskId))
             .join(",");
           delete state.taskMap[taskId];
         });
@@ -122,11 +131,11 @@ export const useQuestStore = create<QuestState>()(
           api.delete_task(taskId);
         }, 5000);
         return () => {
+          clearTimeout(timer);
           set((state) => {
             state.questMap[questId].taskids = oldTaskIds;
             state.taskMap[taskId] = oldTask;
           });
-          clearTimeout(timer);
         };
       },
       finishTask: async (taskId: number) => {

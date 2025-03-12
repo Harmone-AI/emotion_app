@@ -188,7 +188,7 @@ export default function HomeScreen({ navigation }: any) {
     });
     return () => {
       subscription.remove();
-      player?.release();
+      player?.pause();
     };
   }, []);
 

@@ -25,9 +25,9 @@ import Animated, {
   ZoomInEasyDown,
   ZoomOut,
 } from "react-native-reanimated";
-// import RightAction from "../RightActions";
-import { SwipeableMethods } from "react-native-gesture-handler/lib/typescript/components/ReanimatedSwipeable";
-import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Swipeable, {
+  SwipeableMethods,
+} from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RectButton } from "react-native-gesture-handler";
 import { HBase } from "@/components/HBase";
 import { Image } from "expo-image";
